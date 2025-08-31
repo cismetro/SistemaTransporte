@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Sistema de Transporte{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 4rem auto;">
+    <div class="card">
+        <div class="card-header">
+            <h2 style="text-align: center; margin: 0;">🔐 Acesso ao Sistema</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label" for="username">Usuário:</label>
+                    <input type="text" id="username" name="username" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Senha:</label>
+                    <input type="password" id="password" name="password" class="form-input" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Entrar
+                </button>
+            </form>
+            
+            <div style="margin-top: 1rem; text-align: center; font-size: 0.9rem; color: var(--gray-color);">
+                <p>Login padrão: <strong>admin</strong></p>
+                <p>Senha padrão: <strong>admin123</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

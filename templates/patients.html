@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Pacientes - Sistema de Transporte{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1>👥 Gestão de Pacientes</h1>
+        <a href="/patients/new" class="btn btn-primary">➕ Novo Paciente</a>
+    </div>
+    
+    <!-- Busca -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-body">
+            <form method="GET" style="display: flex; gap: 1rem; align-items: end;">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label class="form-label" for="search">Buscar por Nome ou CPF:</label>
+                    <input type="text" id="search" name="search" class="form-input" 
+                           value="{{ search }}" placeholder="Digite o nome ou CPF...">
+                </div>
+                <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+                {% if search %}
+                <a href="/patients" class="btn btn-secondary">❌ Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    
+    <!-- Lista de Pacientes -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Lista de Pacientes Cadastrados</h3>
+        </div>
+        <div class="card-body">
+            {% if patients %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>CPF</th>
+                            <th>Nome</th>
+                            <th>Telefone</th>
+                            <th>Prioridade</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                        <tr>
+                            <td>{{ patient.cpf }}</td>
+                            <td>{{ patient.name }}</td>
+                            <td>{{ patient.phone or '-' }}</td>
+                            <td>
+                                {% if patient.priority_type == 'idoso' %}
+                                    <span class="priority-medium">Idoso</span>
+                                {% elif patient.priority_type == 'gestante' %}
+                                    <span class="priority-high">Gestante</span>
+                                {% elif patient.priority_type == 'crianca_autista' %}
+                                    <span class="priority-high">Criança Autista</span>
+                                {% elif patient.priority_type == 'oncologia' %}
+                                    <span class="priority-high">Oncologia</span>
+                                {% else %}
+                                    <span class="priority-normal">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/patients/{{ patient.id }}/edit" class="btn" style="background-color: var(--color-60); color: white; padding: 0.25rem 0.5rem; font-size: 0.8rem;">✏️ Editar</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">👥</div>
+                    <h3>Nenhum paciente encontrado</h3>
+                    {% if search %}
+                        <p>Não foram encontrados pacientes com o termo "{{ search }}".</p>
+                        <a href="/patients" class="btn btn-secondary">Ver todos os pacientes</a>
+                    {% else %}
+                        <p>Comece cadastrando o primeiro paciente do sistema.</p>
+                        <a href="/patients/new" class="btn btn-primary">➕ Cadastrar Primeiro Paciente</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

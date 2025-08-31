@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Veículos - Sistema de Transporte{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1>🚙 Gestão de Veículos</h1>
+        <a href="/vehicles/new" class="btn btn-primary">➕ Novo Veículo</a>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Frota de Veículos Ativos</h3>
+        </div>
+        <div class="card-body">
+            {% if vehicles %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Placa</th>
+                            <th>Modelo/Marca</th>
+                            <th>Ano</th>
+                            <th>Tipo</th>
+                            <th>Capacidade</th>
+                            <th>Adaptações</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vehicle in vehicles %}
+                        <tr>
+                            <td><strong>{{ vehicle.plate }}</strong></td>
+                            <td>{{ vehicle.model }} / {{ vehicle.brand }}</td>
+                            <td>{{ vehicle.year }}</td>
+                            <td>
+                                {% if vehicle.ownership == 'proprio' %}
+                                    <span class="priority-normal">Próprio</span>
+                                {% else %}
+                                    <span class="priority-medium">Alugado</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ vehicle.capacity }} pessoas</td>
+                            <td>
+                                {% set adaptations = [] %}
+                                {% if vehicle.has_wheelchair_access %}
+                                    {{ adaptations.append('♿ Cadeirante') or '' }}
+                                {% endif %}
+                                {% if vehicle.has_stretcher %}
+                                    {{ adaptations.append('🏥 Maca') or '' }}
+                                {% endif %}
+                                {% if vehicle.has_oxygen %}
+                                    {{ adaptations.append('🫁 Oxigênio') or '' }}
+                                {% endif %}
+                                {{ adaptations|join(', ') if adaptations else '-' }}
+                            </td>
+                            <td>
+                                <a href="/vehicles/{{ vehicle.id }}/edit" class="btn" style="background-color: var(--color-60); color: white; padding: 0.25rem 0.5rem; font-size: 0.8rem;">✏️ Editar</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🚙</div>
+                    <h3>Nenhum veículo cadastrado</h3>
+                    <p>Comece cadastrando o primeiro veículo da frota.</p>
+                    <a href="/vehicles/new" class="btn btn-primary">➕ Cadastrar Primeiro Veículo</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

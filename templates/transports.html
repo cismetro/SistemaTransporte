@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Transportes - Sistema de Transporte{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1>📋 Controle de Transportes</h1>
+        <a href="/transports/new" class="btn btn-primary">➕ Novo Agendamento</a>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Últimos Transportes Agendados</h3>
+        </div>
+        <div class="card-body">
+            {% if transports %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Paciente</th>
+                            <th>Destino</th>
+                            <th>Motorista</th>
+                            <th>Veículo</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transport in transports %}
+                        <tr>
+                            <td>{{ transport.appointment_date }}</td>
+                            <td>{{ transport.patient_name or 'N/A' }}</td>
+                            <td>{{ transport.destination }}</td>
+                            <td>{{ transport.driver_name or 'N/A' }}</td>
+                            <td>{{ transport.vehicle_plate or 'N/A' }}</td>
+                            <td>
+                                {% if transport.status == 'agendado' %}
+                                    <span class="priority-normal">Agendado</span>
+                                {% elif transport.status == 'em_andamento' %}
+                                    <span class="priority-medium">Em Andamento</span>
+                                {% elif transport.status == 'concluido' %}
+                                    <span class="priority-normal">Concluído</span>
+                                {% else %}
+                                    <span class="priority-high">Cancelado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/transports/{{ transport.id }}/edit" class="btn" style="background-color: var(--color-60); color: white; padding: 0.25rem 0.5rem; font-size: 0.8rem;">✏️ Editar</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
+                    <h3>Nenhum transporte agendado</h3>
+                    <p>Comece criando o primeiro agendamento de transporte.</p>
+                    <a href="/transports/new" class="btn btn-primary">➕ Criar Primeiro Agendamento</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

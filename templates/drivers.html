@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Motoristas - Sistema de Transporte{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1>🚗 Gestão de Motoristas</h1>
+        <a href="/drivers/new" class="btn btn-primary">➕ Novo Motorista</a>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>Lista de Motoristas Ativos</h3>
+        </div>
+        <div class="card-body">
+            {% if drivers %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>CPF</th>
+                            <th>CNH</th>
+                            <th>Categoria</th>
+                            <th>Telefone</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for driver in drivers %}
+                        <tr>
+                            <td>{{ driver.name }}</td>
+                            <td>{{ driver.cpf }}</td>
+                            <td>{{ driver.cnh }}</td>
+                            <td>{{ driver.cnh_category }}</td>
+                            <td>{{ driver.phone or '-' }}</td>
+                            <td>
+                                <a href="/drivers/{{ driver.id }}/edit" class="btn" style="background-color: var(--color-60); color: white; padding: 0.25rem 0.5rem; font-size: 0.8rem;">✏️ Editar</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="text-align: center; padding: 3rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🚗</div>
+                    <h3>Nenhum motorista cadastrado</h3>
+                    <p>Comece cadastrando o primeiro motorista do sistema.</p>
+                    <a href="/drivers/new" class="btn btn-primary">➕ Cadastrar Primeiro Motorista</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

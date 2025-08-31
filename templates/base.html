@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Transporte de Saúde{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>🚐 Sistema de Transporte de Saúde</h1>
+        </div>
+    </header>
+
+    {% if session.user_id %}
+    <nav class="navbar">
+        <div class="container">
+            <ul class="nav-list">
+                <li><a href="/dashboard">🏠 Dashboard</a></li>
+                <li><a href="/patients">👥 Pacientes</a></li>
+                <li><a href="/drivers">🚗 Motoristas</a></li>
+                <li><a href="/vehicles">🚙 Veículos</a></li>
+                <li><a href="/transports">📋 Transportes</a></li>
+                <li><a href="/logout">🚪 Sair</a></li>
+            </ul>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // Auto-hide alerts
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

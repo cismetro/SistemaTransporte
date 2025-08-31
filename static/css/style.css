@@ -1,0 +1,347 @@
+/* Variáveis de cores baseadas na paleta turquesa */
+:root {
+    /* Paleta de cores principal (tons de turquesa/verde-azulado) */
+    --color-100: #ffffff;    /* 100% */
+    --color-95: #ebf9f9;     /* 95% */
+    --color-90: #d8f3f2;     /* 90% */
+    --color-85: #c4edec;     /* 85% */
+    --color-80: #b1e7e5;     /* 80% */
+    --color-75: #9de1df;     /* 75% */
+    --color-70: #8adbd8;     /* 70% */
+    --color-65: #76d5d2;     /* 65% */
+    --color-60: #63cfcb;     /* 60% */
+    --color-55: #4fc9c4;     /* 55% */
+    --color-50: #3cc3bf;     /* 50% */
+    --color-45: #36b0ac;     /* 45% */
+    --color-40: #309c98;     /* 40% */
+    --color-35: #2a8985;     /* 35% */
+    --color-30: #247572;     /* 30% */
+    --color-25: #1e625f;     /* 25% */
+    --color-20: #184e4c;     /* 20% */
+    --color-15: #123b39;     /* 15% */
+    --color-10: #0c2726;     /* 10% */
+    --color-5: #061413;      /* 5% */
+    --color-0: #000000;      /* 0% */
+    
+    /* Colors from wt_health_center_free Template */
+    --primary-color: var(--color-55); /* Template primary turquoise */
+    --primary-dark: var(--color-45); /* Darker turquoise for hover states */
+    --primary-hover: var(--color-40); /* Even darker for active states */
+    --secondary-color: #6d7a8c; /* Template secondary */
+    --text-color: #3f485d; /* Template default text color */
+    --border-color: #e5e5e5; /* Template default border */
+    --success-color: #79b24a; /* Template success green */
+    --warning-color: #f2823c; /* Template warning orange */
+    --danger-color: #e81d51; /* Template danger red */
+    --info-color: #91ceff; /* Template info blue */
+    
+    /* Additional colors */
+    --light-color: var(--color-95);
+    --dark-color: var(--color-20); /* Template bottom_bg_color */
+    --gray-color: #6d7a8c; /* Template footer text color */
+    --input-focus: var(--primary-color); /* Template primary color for focus */
+    --input-focus-shadow: rgba(79, 201, 196, 0.25); /* Template shadow */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-95);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+/* Navigation */
+.navbar {
+    background-color: var(--color-90);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-list {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-list a {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.nav-list a:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin: 1rem 0;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--color-70), var(--color-60));
+    color: white;
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--input-focus-shadow);
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: var(--color-80);
+    color: var(--text-color);
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.btn-warning {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+/* Tables */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.table th {
+    background: linear-gradient(135deg, var(--color-65), var(--color-55));
+    color: white;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-90);
+}
+
+.table tr:hover {
+    background-color: var(--color-95);
+}
+
+/* Alerts */
+.alert {
+    padding: 1rem;
+    border-radius: 5px;
+    margin: 1rem 0;
+    border-left: 4px solid;
+}
+
+.alert-success {
+    background-color: rgba(121, 178, 74, 0.1);
+    border-color: var(--success-color);
+    color: #2d5016;
+}
+
+.alert-danger {
+    background-color: rgba(232, 29, 81, 0.1);
+    border-color: var(--danger-color);
+    color: #7a0b2e;
+}
+
+.alert-warning {
+    background-color: rgba(242, 130, 60, 0.1);
+    border-color: var(--warning-color);
+    color: #8b4513;
+}
+
+.alert-info {
+    background-color: rgba(145, 206, 255, 0.1);
+    border-color: var(--info-color);
+    color: #1e3a5f;
+}
+
+/* Dashboard */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, var(--color-80), var(--color-70));
+    color: var(--text-color);
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-list {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .container {
+        padding: 0 10px;
+    }
+}
+
+/* Loading */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--color-90);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Priority indicators */
+.priority-high {
+    background-color: var(--danger-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+.priority-medium {
+    background-color: var(--warning-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+.priority-normal {
+    background-color: var(--color-60);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}

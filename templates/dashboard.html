@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Transporte{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <h1>🏠 Dashboard - Bem-vindo ao Sistema!</h1>
+    
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <div class="stat-number">0</div>
+            <div class="stat-label">Pacientes Cadastrados</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">0</div>
+            <div class="stat-label">Motoristas Ativos</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">0</div>
+            <div class="stat-label">Veículos Disponíveis</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">0</div>
+            <div class="stat-label">Transportes Hoje</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>🚀 Sistema de Transporte de Saúde</h3>
+        </div>
+        <div class="card-body">
+            <p>Bem-vindo ao sistema! Use o menu de navegação acima para acessar as diferentes funcionalidades:</p>
+            <ul style="margin: 1rem 0; padding-left: 2rem;">
+                <li><strong>👥 Pacientes:</strong> Cadastro e gerenciamento de pacientes</li>
+                <li><strong>🚗 Motoristas:</strong> Cadastro e controle dos motoristas</li>
+                <li><strong>🚙 Veículos:</strong> Gerenciamento da frota de veículos</li>
+                <li><strong>📋 Transportes:</strong> Controle de viagens e transportes</li>
+                <li><strong>📅 Agendamento:</strong> Agendamento de novos transportes</li>
+                <li><strong>📊 Relatórios:</strong> Relatórios e estatísticas</li>
+            </ul>
+            
+            <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                <p><strong>💡 Dica:</strong> Esta é a versão inicial do sistema. As funcionalidades estão sendo implementadas gradualmente.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
