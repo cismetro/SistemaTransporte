@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{% if vehicle %}Editar{% else %}Novo{% endif %} Veículo{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <h1>🚙 {% if vehicle %}Editar{% else %}Novo{% endif %} Veículo</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>{% if vehicle %}Editar Dados do{% else %}Cadastrar Novo{% endif %} Veículo</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="plate">Placa: *</label>
+                        <input type="text" id="plate" name="plate" class="form-input" 
+                               value="{{ vehicle.plate if vehicle else '' }}" 
+                               placeholder="ABC-1234" maxlength="8" required style="text-transform: uppercase;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="model">Modelo: *</label>
+                        <input type="text" id="model" name="model" class="form-input" 
+                               value="{{ vehicle.model if vehicle else '' }}" 
+                               placeholder="Ex: Sprinter, Ducato" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="brand">Marca: *</label>
+                        <input type="text" id="brand" name="brand" class="form-input" 
+                               value="{{ vehicle.brand if vehicle else '' }}" 
+                               placeholder="Ex: Mercedes, Fiat" required>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="year">Ano: *</label>
+                        <input type="number" id="year" name="year" class="form-input" 
+                               value="{{ vehicle.year if vehicle else '' }}" 
+                               min="1990" max="2030" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="ownership">Tipo de Propriedade: *</label>
+                        <select id="ownership" name="ownership" class="form-select" required>
+                            <option value="">Selecione...</option>
+                            <option value="proprio" {{ 'selected' if vehicle and vehicle.ownership == 'proprio' else '' }}>Próprio da Prefeitura</option>
+                            <option value="alugado" {{ 'selected' if vehicle and vehicle.ownership == 'alugado' else '' }}>Alugado/Terceirizado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="capacity">Capacidade (pessoas): *</label>
+                        <input type="number" id="capacity" name="capacity" class="form-input" 
+                               value="{{ vehicle.capacity if vehicle else '4' }}" 
+                               min="1" max="20" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="current_km">Quilometragem Atual:</label>
+                    <input type="number" id="current_km" name="current_km" class="form-input" 
+                           value="{{ vehicle.current_km if vehicle else '0' }}" 
+                           min="0" placeholder="0">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Adaptações Especiais:</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" name="wheelchair" value="1" 
+                                   {{ 'checked' if vehicle and vehicle.has_wheelchair_access else '' }}>
+                            ♿ Acesso para Cadeirante
+                        </label>
+                        
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" name="stretcher" value="1" 
+                                   {{ 'checked' if vehicle and vehicle.has_stretcher else '' }}>
+                            🏥 Suporte para Maca
+                        </label>
+                        
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" name="oxygen" value="1" 
+                                   {{ 'checked' if vehicle and vehicle.has_oxygen else '' }}>
+                            🫁 Suporte para Oxigênio
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary">
+                        💾 {% if vehicle %}Atualizar{% else %}Cadastrar{% endif %} Veículo
+                    </button>
+                    <a href="/vehicles" class="btn btn-secondary">
+                        ❌ Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

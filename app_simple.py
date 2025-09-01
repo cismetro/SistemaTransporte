@@ -200,6 +200,143 @@ def transports():
     
     return render_template('transports.html', transports=transports_list)
 
+@app.route('/drivers/new', methods=['GET', 'POST'])
+def drivers_new():
+    if not check_auth():
+        return redirect('/login')
+    
+    if request.method == 'POST':
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT INTO driver (name, cpf, cnh, cnh_category, cnh_expiry, phone, address, hire_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                request.form['name'],
+                request.form['cpf'],
+                request.form['cnh'],
+                request.form['cnh_category'],
+                request.form['cnh_expiry'],
+                request.form.get('phone'),
+                request.form.get('address'),
+                request.form['hire_date']
+            ))
+            
+            conn.commit()
+            conn.close()
+            
+            flash('Motorista cadastrado com sucesso!', 'success')
+            return redirect('/drivers')
+        except Exception as e:
+            flash(f'Erro ao cadastrar motorista: {str(e)}', 'danger')
+    
+    return render_template('drivers/form.html', driver=None)
+
+@app.route('/vehicles/new', methods=['GET', 'POST'])
+def vehicles_new():
+    if not check_auth():
+        return redirect('/login')
+    
+    if request.method == 'POST':
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT INTO vehicle (plate, model, brand, year, ownership, capacity, 
+                                   has_wheelchair_access, has_stretcher, has_oxygen, current_km)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                request.form['plate'].upper(),
+                request.form['model'],
+                request.form['brand'],
+                int(request.form['year']),
+                request.form['ownership'],
+                int(request.form.get('capacity', 4)),
+                1 if 'wheelchair' in request.form else 0,
+                1 if 'stretcher' in request.form else 0,
+                1 if 'oxygen' in request.form else 0,
+                int(request.form.get('current_km', 0))
+            ))
+            
+            conn.commit()
+            conn.close()
+            
+            flash('Veículo cadastrado com sucesso!', 'success')
+            return redirect('/vehicles')
+        except Exception as e:
+            flash(f'Erro ao cadastrar veículo: {str(e)}', 'danger')
+    
+    return render_template('vehicles/form.html', vehicle=None)
+
+@app.route('/transports/new', methods=['GET', 'POST'])
+def transports_new():
+    if not check_auth():
+        return redirect('/login')
+    
+    if request.method == 'POST':
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            
+            # Determinar destino final
+            destination = request.form['destination']
+            if destination == 'Outro':
+                destination = request.form.get('custom_destination', 'Não especificado')
+            
+            cursor.execute('''
+                INSERT INTO transport (patient_id, driver_id, vehicle_id, destination, 
+                                     appointment_date, appointment_time, departure_time, 
+                                     medical_guide, specialty, observations, created_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                int(request.form['patient_id']),
+                int(request.form['driver_id']),
+                int(request.form['vehicle_id']),
+                destination,
+                request.form['appointment_date'],
+                request.form.get('appointment_time') or None,
+                request.form.get('departure_time') or None,
+                request.form.get('medical_guide'),
+                request.form.get('specialty'),
+                request.form.get('observations'),
+                session['user_id']
+            ))
+            
+            conn.commit()
+            conn.close()
+            
+            flash('Transporte agendado com sucesso!', 'success')
+            return redirect('/transports')
+        except Exception as e:
+            flash(f'Erro ao agendar transporte: {str(e)}', 'danger')
+    
+    # Buscar dados para os selects
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM patient ORDER BY name')
+    patients = cursor.fetchall()
+    
+    cursor.execute('SELECT * FROM driver WHERE is_active = 1 ORDER BY name')
+    drivers = cursor.fetchall()
+    
+    cursor.execute('SELECT * FROM vehicle WHERE is_active = 1 ORDER BY plate')
+    vehicles = cursor.fetchall()
+    
+    conn.close()
+    
+    return render_template('transports/form.html', 
+                         transport=None, 
+                         patients=patients, 
+                         drivers=drivers, 
+                         vehicles=vehicles)
+
+
+
+
 if __name__ == '__main__':
     if not os.path.exists(DB_PATH):
         print("❌ Banco de dados não encontrado!")

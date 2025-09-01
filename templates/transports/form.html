@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}{% if transport %}Editar{% else %}Novo{% endif %} Transporte{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <h1>📋 {% if transport %}Editar{% else %}Novo{% endif %} Agendamento de Transporte</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3>{% if transport %}Editar{% else %}Criar{% endif %} Agendamento</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <!-- Busca de Paciente -->
+                <div class="form-group">
+                    <label class="form-label" for="patient_cpf">Buscar Paciente por CPF:</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="text" id="patient_cpf" class="form-input" 
+                               placeholder="000.000.000-00" style="flex: 1;">
+                        <button type="button" onclick="searchPatient()" class="btn btn-secondary">🔍 Buscar</button>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="patient_id">Paciente Selecionado: *</label>
+                        <select id="patient_id" name="patient_id" class="form-select" required>
+                            <option value="">Selecione um paciente...</option>
+                            {% for patient in patients %}
+                            <option value="{{ patient.id }}" {{ 'selected' if transport and transport.patient_id == patient.id else '' }}>
+                                {{ patient.name }} - {{ patient.cpf }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="driver_id">Motorista: *</label>
+                        <select id="driver_id" name="driver_id" class="form-select" required>
+                            <option value="">Selecione um motorista...</option>
+                            {% for driver in drivers %}
+                            <option value="{{ driver.id }}" {{ 'selected' if transport and transport.driver_id == driver.id else '' }}>
+                                {{ driver.name }} - CNH {{ driver.cnh_category }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="vehicle_id">Veículo: *</label>
+                        <select id="vehicle_id" name="vehicle_id" class="form-select" required>
+                            <option value="">Selecione um veículo...</option>
+                            {% for vehicle in vehicles %}
+                            <option value="{{ vehicle.id }}" {{ 'selected' if transport and transport.vehicle_id == vehicle.id else '' }}>
+                                {{ vehicle.plate }} - {{ vehicle.model }} ({{ vehicle.capacity }} pessoas)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="destination">Destino: *</label>
+                    <select id="destination" name="destination" class="form-select" required>
+                        <option value="">Selecione o destino...</option>
+                        <option value="Hospital Regional de Sobradinho" {{ 'selected' if transport and transport.destination == 'Hospital Regional de Sobradinho' else '' }}>Hospital Regional de Sobradinho</option>
+                        <option value="Hospital de Base do DF" {{ 'selected' if transport and transport.destination == 'Hospital de Base do DF' else '' }}>Hospital de Base do DF</option>
+                        <option value="Hospital da Criança de Brasília" {{ 'selected' if transport and transport.destination == 'Hospital da Criança de Brasília' else '' }}>Hospital da Criança de Brasília</option>
+                        <option value="Instituto de Cardiologia do DF" {{ 'selected' if transport and transport.destination == 'Instituto de Cardiologia do DF' else '' }}>Instituto de Cardiologia do DF</option>
+                        <option value="Hospital Materno Infantil de Brasília" {{ 'selected' if transport and transport.destination == 'Hospital Materno Infantil de Brasília' else '' }}>Hospital Materno Infantil de Brasília</option>
+                        <option value="Centro de Reabilitação SARAH" {{ 'selected' if transport and transport.destination == 'Centro de Reabilitação SARAH' else '' }}>Centro de Reabilitação SARAH</option>
+                        <option value="Outro" {{ 'selected' if transport and transport.destination == 'Outro' else '' }}>Outro (especificar abaixo)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="other_destination" style="display: none;">
+                    <label class="form-label" for="custom_destination">Especificar Destino:</label>
+                    <input type="text" id="custom_destination" class="form-input" 
+                           placeholder="Digite o destino específico">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="appointment_date">Data da Consulta/Exame: *</label>
+                        <input type="date" id="appointment_date" name="appointment_date" class="form-input" 
+                               value="{{ transport.appointment_date if transport else '' }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="appointment_time">Horário da Consulta:</label>
+                        <input type="time" id="appointment_time" name="appointment_time" class="form-input" 
+                               value="{{ transport.appointment_time if transport else '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="departure_time">Horário de Saída:</label>
+                        <input type="time" id="departure_time" name="departure_time" class="form-input" 
+                               value="{{ transport.departure_time if transport else '05:00' }}">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="medical_guide">Número da Guia Médica:</label>
+                        <input type="text" id="medical_guide" name="medical_guide" class="form-input" 
+                               value="{{ transport.medical_guide if transport else '' }}" 
+                               placeholder="Número da guia de encaminhamento">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="specialty">Tipo:</label>
+                        <select id="specialty" name="specialty" class="form-select">
+                            <option value="">Selecione...</option>
+                            <option value="Consulta" {{ 'selected' if transport and transport.specialty == 'Consulta' else '' }}>Consulta Médica</option>
+                            <option value="Exame" {{ 'selected' if transport and transport.specialty == 'Exame' else '' }}>Exame</option>
+                            <option value="Cirurgia" {{ 'selected' if transport and transport.specialty == 'Cirurgia' else '' }}>Cirurgia</option>
+                            <option value="Radioterapia" {{ 'selected' if transport and transport.specialty == 'Radioterapia' else '' }}>Radioterapia</option>
+                            <option value="Quimioterapia" {{ 'selected' if transport and transport.specialty == 'Quimioterapia' else '' }}>Quimioterapia</option>
+                            <option value="Hemodiálise" {{ 'selected' if transport and transport.specialty == 'Hemodiálise' else '' }}>Hemodiálise</option>
+                            <option value="Outro" {{ 'selected' if transport and transport.specialty == 'Outro' else '' }}>Outro</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="observations">Observações para o Motorista:</label>
+                    <textarea id="observations" name="observations" class="form-textarea" rows="3" 
+                              placeholder="Observações especiais, cuidados necessários, etc.">{{ transport.observations if transport else '' }}</textarea>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary">
+                        💾 {% if transport %}Atualizar{% else %}Agendar{% endif %} Transporte
+                    </button>
+                    <a href="/transports" class="btn btn-secondary">
+                        ❌ Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mostrar campo personalizado quando "Outro" for selecionado
+document.getElementById('destination').addEventListener('change', function() {
+    const otherField = document.getElementById('other_destination');
+    if (this.value === 'Outro') {
+        otherField.style.display = 'block';
+    } else {
+        otherField.style.display = 'none';
+    }
+});
+
+// Função para buscar paciente (placeholder)
+function searchPatient() {
+    const cpf = document.getElementById('patient_cpf').value;
+    if (cpf) {
+        alert('Funcionalidade de busca será implementada em breve!');
+    }
+}
+</script>
+{% endblock %}
