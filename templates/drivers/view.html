@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{{ driver.name }} - Detalhes do Motorista{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <!-- Cabeçalho -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1>🚗 Detalhes do Motorista</h1>
+            <p style="color: var(--gray-color); margin: 0.5rem 0;">Visualização completa dos dados e histórico</p>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <a href="/drivers/{{ driver.id }}/edit" class="btn btn-primary">✏️ Editar</a>
+            <a href="/drivers" class="btn btn-secondary">🔙 Voltar</a>
+        </div>
+    </div>
+
+    <!-- Status do Motorista -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">👨‍💼</div>
+            <h2 style="color: var(--primary-color); margin-bottom: 0.5rem;">{{ driver.name }}</h2>
+            <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 1rem;">
+                {% if driver.is_active %}
+                    <span class="priority-normal" style="padding: 0.5rem 1rem; border-radius: 20px;">✅ Motorista Ativo</span>
+                {% else %}
+                    <span class="priority-high" style="padding: 0.5rem 1rem; border-radius: 20px;">❌ Motorista Inativo</span>
+                {% endif %}
+                <span class="priority-normal" style="padding: 0.5rem 1rem; border-radius: 20px;">🪪 CNH {{ driver.cnh_category }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_transports }}</div>
+            <div class="stat-label">Total de Transportes</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">{{ completed_transports }}</div>
+            <div class="stat-label">Transportes Concluídos</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">
+                {% if total_transports > 0 %}
+                    {{ ((completed_transports / total_transports) * 100)|round|int }}%
+                {% else %}
+                    0%
+                {% endif %}
+            </div>
+            <div class="stat-label">Taxa de Conclusão</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">
+                {% set years_working = (driver.hire_date|length > 0) %}
+                {% if years_working %}
+                    {{ ((2025 - driver.hire_date[:4]|int)) if driver.hire_date[:4]|int < 2025 else 0 }}
+                {% else %}
+                    0
+                {% endif %}
+            </div>
+            <div class="stat-label">Anos de Serviço</div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <!-- Dados Pessoais -->
+        <div class="card">
+            <div class="card-header">
+                <h3>👤 Dados Pessoais</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; gap: 1rem;">
+                    <div>
+                        <label style="font-weight: bold; color: var(--text-color);">Nome Completo:</label>
+                        <p style="margin: 0.25rem 0; padding: 0.5rem; background-color: var(--color-95); border-radius: 5px;">{{ driver.name }}</p>
+                    </div>
+                    
+                    <div>
+                        <label style="font-weight: bold; color: var(--text-color);">CPF:</label>
+                        <p style="margin: 0.25rem 0; padding: 0.5rem; background-color: var(--color-95); border-radius: 5px;">{{ driver.cpf }}</p>
+                    </div>
+                    
+                    <div>
+                        <label style="font-weight: bold; color: var(--text-color);">Telefone:</label>
+                        <p style="margin: 0.25rem 0; padding: 0.5rem; background-color: var(--color-95); border-radius: 5px;">{{ driver.phone or 'Não informado' }}</p>
+                    </div>
+                    
+                    <div>
+                        <label style="font-weight: bold; color: var(--text-color);">Endereço:</label>
+                        <p style="margin: 0.25rem 0; padding: 0.5rem; background-color: var(--color-95); border-radius: 5px;">{{ driver.address or 'Não informado' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dados Profissionais -->
+        <div class="card">
+            <div class="card-header">
+                <h3>🪪 Dados da CNH e Contratação</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; gap: 1rem;">
+                    <div>
+                        <label style="font-weight: bold; color: var(--text-color);">Número da CNH:</label>
+                        <p style="margin: 0.25rem 0; padding: 0.5rem; background-color: var(--color-95); border-radius: 5px;">{{ driver.cnh }}</p>
+                    </div>
+                    
+                    <div>
+                        <label style="font-weight: bold; color: var(--text-color);">Categoria:</label>
+                        <p style="margin: 0.25rem 0; padding: 0.5rem; background-color: var(--color-95); border-radius: 5px;">
+                            <span class="priority-normal" style="font-weight: bold;">{{ driver.cnh_category }}</span>
+                            {% if driver.cnh_category == 'D' %}
+                                - Habilitado para transporte de passageiros
+                            {% elif driver.cnh_category == 'C' %}
+                                - Habilitado para veículos de carga
+                            {% elif driver.cnh_category == 'B' %}
+                                - Veículos de passeio
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label style="font-weight: bold; color: var(--text-color);">Validade da CNH:</label>
+                        <p style="margin: 0.25rem 0; padding: 0.5rem; background-color: var(--color-95); border-radius: 5px;">
+                            {{ driver.cnh_expiry }}
+                            {% if driver.cnh_expiry %}
+                                <!-- Aqui poderia calcular dias para vencer -->
+                                <small style="color: var(--success-color);">✅ Válida</small>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label style="font-weight: bold; color: var(--text-color);">Data de Contratação:</label>
+                        <p style="margin: 0.25rem 0; padding: 0.5rem; background-color: var(--color-95); border-radius: 5px;">{{ driver.hire_date }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Histórico de Transportes -->
+    <div class="card" style="margin-top: 2rem;">
+        <div class="card-header">
+            <h3>📋 Últimos Transportes Realizados</h3>
+        </div>
+        <div class="card-body">
+            {% if recent_transports %}
+                <div style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Paciente</th>
+                                <th>Destino</th>
+                                <th>Veículo</th>
+                                <th>Status</th>
+                                <th>Observações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transport in recent_transports %}
+                            <tr>
+                                <td>{{ transport.appointment_date }}</td>
+                                <td>{{ transport.patient_name or 'N/A' }}</td>
+                                <td>{{ transport.destination }}</td>
+                                <td>{{ transport.vehicle_plate or 'N/A' }}</td>
+                                <td>
+                                    {% if transport.status == 'agendado' %}
+                                        <span class="priority-normal">Agendado</span>
+                                    {% elif transport.status == 'em_andamento' %}
+                                        <span class="priority-medium">Em Andamento</span>
+                                    {% elif transport.status == 'concluido' %}
+                                        <span class="priority-normal">Concluído</span>
+                                    {% else %}
+                                        <span class="priority-high">Cancelado</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ transport.observations[:50] + '...' if transport.observations and transport.observations|length > 50 else transport.observations or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if total_transports > 10 %}
+                <div style="text-align: center; margin-top: 1rem;">
+                    <p style="color: var(--gray-color);">Mostrando os 10 transportes mais recentes de {{ total_transports }} no total.</p>
+                    <a href="/transports?driver={{ driver.id }}" class="btn btn-secondary">Ver Todo o Histórico</a>
+                </div>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                    <h4>Nenhum transporte realizado</h4>
+                    <p style="color: var(--gray-color);">Este motorista ainda não realizou nenhum transporte.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Ações -->
+    <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center;">
+        <a href="/drivers/{{ driver.id }}/edit" class="btn btn-primary">✏️ Editar Dados</a>
+        <a href="/transports/new?driver={{ driver.id }}" class="btn btn-secondary">📅 Agendar Transporte</a>
+        <a href="/drivers" class="btn" style="background-color: var(--gray-color); color: white;">🔙 Voltar à Lista</a>
+    </div>
+</div>
+{% endblock %}

@@ -127,20 +127,36 @@ def patients_new():
             conn = get_db()
             cursor = conn.cursor()
             
+            # Determinar especialidade final
+            specialty = request.form['specialty']
+            if specialty == 'Outro':
+                specialty = request.form.get('other_specialty', 'Não especificado')
+            
             cursor.execute('''
                 INSERT INTO patient (cpf, name, birth_date, phone, address, 
-                                   emergency_contact, emergency_phone, special_needs, priority_type)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                   emergency_contact, emergency_phone, special_needs, priority_type,
+                                   appointment_date, attendant_name, destination, appointment_time, 
+                                   specialty, has_companion, companion_count, companion_name, companion_rg)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 request.form['cpf'],
-                request.form['name'],
+                request.form['name'].upper(),
                 request.form['birth_date'],
                 request.form.get('phone'),
                 request.form.get('address'),
                 request.form.get('emergency_contact'),
                 request.form.get('emergency_phone'),
                 request.form.get('special_needs'),
-                request.form.get('priority_type')
+                request.form.get('priority_type', 'normal'),
+                request.form['appointment_date'],
+                request.form['attendant_name'].upper(),
+                request.form['destination'],
+                request.form.get('appointment_time') or None,
+                specialty,
+                1 if 'has_companion' in request.form else 0,
+                int(request.form.get('companion_count', 0)),
+                request.form.get('companion_name', '').upper() if request.form.get('companion_name') else None,
+                request.form.get('companion_rg')
             ))
             
             conn.commit()
@@ -158,14 +174,100 @@ def drivers():
     if not check_auth():
         return redirect('/login')
     
+    search = request.args.get('search', '')
+    status_filter = request.args.get('status_filter', 'all')
+    employment_filter = request.args.get('employment_filter', 'all')
+    cnh_filter = request.args.get('cnh_filter', 'all')
+    
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM driver WHERE is_active = 1 ORDER BY name')
+    
+    # Construir query base
+    query = 'SELECT * FROM driver WHERE 1=1'
+    params = []
+    
+    # Aplicar filtros
+    if search:
+        query += ' AND (name LIKE ? OR cnh LIKE ?)'
+        params.extend([f'%{search}%', f'%{search}%'])
+    
+    if status_filter == 'active':
+        query += ' AND is_active = 1'
+    elif status_filter == 'inactive':
+        query += ' AND (is_active = 0 OR is_active IS NULL)'
+    
+    if employment_filter == 'prefeitura':
+        query += ' AND (employment_type = "prefeitura" OR employment_type IS NULL OR employment_type = "")'
+    elif employment_filter == 'terceirizado':
+        query += ' AND employment_type = "terceirizado"'
+    
+    if cnh_filter != 'all':
+        query += ' AND cnh_category = ?'
+        params.append(cnh_filter)
+    
+    query += ' ORDER BY name'
+    
+    print(f"🔍 Query SQL: {query}")
+    print(f"🔍 Parâmetros: {params}")
+    
+    cursor.execute(query, params)
     drivers_list = cursor.fetchall()
+    
+    print(f"🔍 Total de motoristas encontrados: {len(drivers_list)}")
+    if drivers_list:
+        first_driver = drivers_list[0]
+        # Usar try/except para campos que podem não existir
+        try:
+            employment_type = first_driver['employment_type'] if 'employment_type' in first_driver.keys() else 'NULL'
+        except:
+            employment_type = 'NULL'
+            
+        try:
+            company_name = first_driver['company_name'] if 'company_name' in first_driver.keys() else 'NULL'
+        except:
+            company_name = 'NULL'
+            
+        print(f"🔍 Primeiro motorista:")
+        print(f"   - Nome: {first_driver['name']}")
+        print(f"   - CNH Categoria: {first_driver['cnh_category']}")
+        print(f"   - Ativo: {first_driver['is_active']}")
+        print(f"   - Employment Type: {employment_type}")
+        print(f"   - Company Name: {company_name}")
+    
     conn.close()
     
-    return render_template('drivers.html', drivers=drivers_list)
+    return render_template('drivers.html', 
+                         drivers=drivers_list, 
+                         search=search,
+                         status_filter=status_filter,
+                         employment_filter=employment_filter,
+                         cnh_filter=cnh_filter)
 
+@app.route('/drivers/<int:driver_id>/toggle-status', methods=['POST'])
+def drivers_toggle_status(driver_id):
+    if not check_auth():
+        return redirect('/login')
+    
+    import json
+    data = json.loads(request.data)
+    active = data.get('active', True)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('UPDATE driver SET is_active = ? WHERE id = ?', (1 if active else 0, driver_id))
+        conn.commit()
+        conn.close()
+        
+        status = "ativado" if active else "desativado"
+        flash(f'Motorista {status} com sucesso!', 'success')
+        return {'success': True}
+    except Exception as e:
+        conn.close()
+        return {'success': False, 'error': str(e)}, 500
+
+                         
 @app.route('/vehicles')
 def vehicles():
     if not check_auth():
@@ -200,6 +302,7 @@ def transports():
     
     return render_template('transports.html', transports=transports_list)
 
+
 @app.route('/drivers/new', methods=['GET', 'POST'])
 def drivers_new():
     if not check_auth():
@@ -211,8 +314,10 @@ def drivers_new():
             cursor = conn.cursor()
             
             cursor.execute('''
-                INSERT INTO driver (name, cpf, cnh, cnh_category, cnh_expiry, phone, address, hire_date)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO driver (name, cpf, cnh, cnh_category, cnh_expiry, phone, address, hire_date, 
+                                  employment_type, company_name, company_cnpj, company_contact, 
+                                  company_phone, company_address, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
             ''', (
                 request.form['name'],
                 request.form['cpf'],
@@ -221,7 +326,13 @@ def drivers_new():
                 request.form['cnh_expiry'],
                 request.form.get('phone'),
                 request.form.get('address'),
-                request.form['hire_date']
+                request.form['hire_date'],
+                request.form['employment_type'],
+                request.form.get('company_name') if request.form['employment_type'] == 'terceirizado' else None,
+                request.form.get('company_cnpj') if request.form['employment_type'] == 'terceirizado' else None,
+                request.form.get('company_contact') if request.form['employment_type'] == 'terceirizado' else None,
+                request.form.get('company_phone') if request.form['employment_type'] == 'terceirizado' else None,
+                request.form.get('company_address') if request.form['employment_type'] == 'terceirizado' else None
             ))
             
             conn.commit()
@@ -233,6 +344,110 @@ def drivers_new():
             flash(f'Erro ao cadastrar motorista: {str(e)}', 'danger')
     
     return render_template('drivers/form.html', driver=None)
+@app.route('/drivers/<int:driver_id>/view')
+def drivers_view(driver_id):
+    if not check_auth():
+        return redirect('/login')
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Buscar dados do motorista
+    cursor.execute('SELECT * FROM driver WHERE id = ?', (driver_id,))
+    driver = cursor.fetchone()
+    
+    if not driver:
+        flash('Motorista não encontrado!', 'danger')
+        return redirect('/drivers')
+    
+    # Buscar transportes realizados por este motorista
+    cursor.execute('''
+        SELECT t.*, p.name as patient_name, v.plate as vehicle_plate
+        FROM transport t
+        LEFT JOIN patient p ON t.patient_id = p.id
+        LEFT JOIN vehicle v ON t.vehicle_id = v.id
+        WHERE t.driver_id = ?
+        ORDER BY t.appointment_date DESC
+        LIMIT 10
+    ''', (driver_id,))
+    recent_transports = cursor.fetchall()
+    
+    # Estatísticas do motorista
+    cursor.execute('SELECT COUNT(*) as total FROM transport WHERE driver_id = ?', (driver_id,))
+    total_transports = cursor.fetchone()['total']
+    
+    cursor.execute('''
+        SELECT COUNT(*) as completed 
+        FROM transport 
+        WHERE driver_id = ? AND status = 'concluido'
+    ''', (driver_id,))
+    completed_transports = cursor.fetchone()['completed']
+    
+    conn.close()
+    
+    return render_template('drivers/view.html', 
+                         driver=driver, 
+                         recent_transports=recent_transports,
+                         total_transports=total_transports,
+                         completed_transports=completed_transports)
+
+
+@app.route('/drivers/<int:driver_id>/edit', methods=['GET', 'POST'])
+def drivers_edit(driver_id):
+    if not check_auth():
+        return redirect('/login')
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Buscar dados do motorista
+    cursor.execute('SELECT * FROM driver WHERE id = ?', (driver_id,))
+    driver = cursor.fetchone()
+    
+    if not driver:
+        flash('Motorista não encontrado!', 'danger')
+        return redirect('/drivers')
+    
+    if request.method == 'POST':
+        try:
+            cursor.execute('''
+                UPDATE driver 
+                SET name = ?, cpf = ?, cnh = ?, cnh_category = ?, cnh_expiry = ?, 
+                    phone = ?, address = ?, hire_date = ?, employment_type = ?,
+                    company_name = ?, company_cnpj = ?, company_contact = ?,
+                    company_phone = ?, company_address = ?, is_active = ?
+                WHERE id = ?
+            ''', (
+                request.form['name'],
+                request.form['cpf'],
+                request.form['cnh'],
+                request.form['cnh_category'],
+                request.form['cnh_expiry'],
+                request.form.get('phone'),
+                request.form.get('address'),
+                request.form['hire_date'],
+                request.form['employment_type'],
+                request.form.get('company_name') if request.form['employment_type'] == 'terceirizado' else None,
+                request.form.get('company_cnpj') if request.form['employment_type'] == 'terceirizado' else None,
+                request.form.get('company_contact') if request.form['employment_type'] == 'terceirizado' else None,
+                request.form.get('company_phone') if request.form['employment_type'] == 'terceirizado' else None,
+                request.form.get('company_address') if request.form['employment_type'] == 'terceirizado' else None,
+                1 if 'is_active' in request.form else 0,
+                driver_id
+            ))
+            
+            conn.commit()
+            conn.close()
+            
+            flash('Motorista atualizado com sucesso!', 'success')
+            return redirect(f'/drivers/{driver_id}/view')
+        except Exception as e:
+            conn.close()
+            flash(f'Erro ao atualizar motorista: {str(e)}', 'danger')
+    else:
+        conn.close()
+    
+    return render_template('drivers/form.html', driver=driver)
 
 @app.route('/vehicles/new', methods=['GET', 'POST'])
 def vehicles_new():

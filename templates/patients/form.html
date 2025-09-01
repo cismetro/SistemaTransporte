@@ -4,7 +4,7 @@
 
 {% block content %}
 <div style="padding: 2rem 0;">
-    <h1>👥 {% if patient %}Editar{% else %}Novo{% endif %} Paciente</h1>
+    <h1> {% if patient %}Editar{% else %}Novo{% endif %} Paciente</h1>
     
     <div class="card">
         <div class="card-header">
@@ -12,82 +12,283 @@
         </div>
         <div class="card-body">
             <form method="POST">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label" for="cpf">CPF: *</label>
-                        <input type="text" id="cpf" name="cpf" class="form-input" 
-                               value="{{ patient.cpf if patient else '' }}" 
-                               placeholder="000.000.000-00" maxlength="14" required>
+                <!-- DADOS BÁSICOS DO PACIENTE -->
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">📋 Dados Básicos do Paciente</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="cpf">CPF: *</label>
+                            <input type="text" id="cpf" name="cpf" class="form-input" 
+                                   value="{{ patient.cpf if patient else '' }}" 
+                                   placeholder="000.000.000-00" maxlength="14" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="name">Nome Completo: *</label>
+                            <input type="text" id="name" name="name" class="form-input" 
+                                   value="{{ patient.name if patient else '' }}" 
+                                   placeholder="Nome completo do paciente" required style="text-transform: uppercase;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="birth_date">Data de Nascimento: *</label>
+                            <input type="date" id="birth_date" name="birth_date" class="form-input" 
+                                   value="{{ patient.birth_date if patient else '' }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="phone">Telefone:</label>
+                            <input type="text" id="phone" name="phone" class="form-input" 
+                                   value="{{ patient.phone if patient else '' }}" 
+                                   placeholder="(00) 00000-0000">
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label" for="name">Nome Completo: *</label>
-                        <input type="text" id="name" name="name" class="form-input" 
-                               value="{{ patient.name if patient else '' }}" 
-                               placeholder="Nome completo do paciente" required>
+                        <label class="form-label" for="address">Endereço:</label>
+                        <textarea id="address" name="address" class="form-textarea" rows="2" 
+                                  placeholder="Endereço completo">{{ patient.address if patient else '' }}</textarea>
                     </div>
                 </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label" for="birth_date">Data de Nascimento: *</label>
-                        <input type="date" id="birth_date" name="birth_date" class="form-input" 
-                               value="{{ patient.birth_date if patient else '' }}" required>
+
+                <!-- DADOS DO AGENDAMENTO -->
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;"> Dados do Agendamento</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="appointment_date">Data do Agendamento: *</label>
+                            <input type="date" id="appointment_date" name="appointment_date" class="form-input" 
+                                   value="{{ patient.appointment_date if patient else '' }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="attendant_name">Nome do Atendente: *</label>
+                            <input type="text" id="attendant_name" name="attendant_name" class="form-input" 
+                                   value="{{ patient.attendant_name if patient else '' }}" 
+                                   placeholder="Nome do atendente" required style="text-transform: uppercase;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="destination">Destino: *</label>
+                            <select id="destination" name="destination" class="form-select" required>
+                                <option value="">Selecione o destino...</option>
+                                <option value="Hospital Regional de Sobradinho" {{ 'selected' if patient and patient.destination == 'Hospital Regional de Sobradinho' else '' }}>Hospital Regional de Sobradinho</option>
+                                <option value="Hospital de Base do DF" {{ 'selected' if patient and patient.destination == 'Hospital de Base do DF' else '' }}>Hospital de Base do DF</option>
+                                <option value="Hospital da Criança de Brasília" {{ 'selected' if patient and patient.destination == 'Hospital da Criança de Brasília' else '' }}>Hospital da Criança de Brasília</option>
+                                <option value="Instituto de Cardiologia do DF" {{ 'selected' if patient and patient.destination == 'Instituto de Cardiologia do DF' else '' }}>Instituto de Cardiologia do DF</option>
+                                <option value="Hospital Materno Infantil de Brasília" {{ 'selected' if patient and patient.destination == 'Hospital Materno Infantil de Brasília' else '' }}>Hospital Materno Infantil de Brasília</option>
+                                <option value="Centro de Reabilitação SARAH" {{ 'selected' if patient and patient.destination == 'Centro de Reabilitação SARAH' else '' }}>Centro de Reabilitação SARAH</option>
+                                <option value="Hospital Universitário de Brasília" {{ 'selected' if patient and patient.destination == 'Hospital Universitário de Brasília' else '' }}>Hospital Universitário de Brasília</option>
+                                <option value="Instituto de Oncologia do DF" {{ 'selected' if patient and patient.destination == 'Instituto de Oncologia do DF' else '' }}>Instituto de Oncologia do DF</option>
+                                <option value="Centro de Hemodiálise de Brasília" {{ 'selected' if patient and patient.destination == 'Centro de Hemodiálise de Brasília' else '' }}>Centro de Hemodiálise de Brasília</option>
+                                <option value="Clínica de Radioterapia" {{ 'selected' if patient and patient.destination == 'Clínica de Radioterapia' else '' }}>Clínica de Radioterapia</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="appointment_time">Horário da Consulta:</label>
+                            <input type="time" id="appointment_time" name="appointment_time" class="form-input" 
+                                   value="{{ patient.appointment_time if patient else '' }}">
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label" for="phone">Telefone:</label>
-                        <input type="text" id="phone" name="phone" class="form-input" 
-                               value="{{ patient.phone if patient else '' }}" 
-                               placeholder="(00) 00000-0000">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="address">Endereço:</label>
-                    <textarea id="address" name="address" class="form-textarea" rows="3" 
-                              placeholder="Endereço completo">{{ patient.address if patient else '' }}</textarea>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label" for="emergency_contact">Contato de Emergência:</label>
-                        <input type="text" id="emergency_contact" name="emergency_contact" class="form-input" 
-                               value="{{ patient.emergency_contact if patient else '' }}" 
-                               placeholder="Nome do contato">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="emergency_phone">Telefone de Emergência:</label>
-                        <input type="text" id="emergency_phone" name="emergency_phone" class="form-input" 
-                               value="{{ patient.emergency_phone if patient else '' }}" 
-                               placeholder="(00) 00000-0000">
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label" for="priority_type">Tipo de Prioridade:</label>
-                        <select id="priority_type" name="priority_type" class="form-select">
-                            <option value="">Selecione...</option>
-                            <option value="normal" {{ 'selected' if patient and patient.priority_type == 'normal' else '' }}>Normal</option>
-                            <option value="idoso" {{ 'selected' if patient and patient.priority_type == 'idoso' else '' }}>Idoso</option>
-                            <option value="gestante" {{ 'selected' if patient and patient.priority_type == 'gestante' else '' }}>Gestante</option>
-                            <option value="crianca_autista" {{ 'selected' if patient and patient.priority_type == 'crianca_autista' else '' }}>Criança Autista</option>
-                            <option value="oncologia" {{ 'selected' if patient and patient.priority_type == 'oncologia' else '' }}>Oncologia</option>
-                            <option value="bebe_prematuro" {{ 'selected' if patient and patient.priority_type == 'bebe_prematuro' else '' }}>Bebê Prematuro</option>
+                        <label class="form-label" for="specialty">Especialidade/Exame: *</label>
+                        <select id="specialty" name="specialty" class="form-select" required onchange="toggleOtherSpecialty()">
+                            <option value="">Selecione a especialidade...</option>
+                            
+                            <optgroup label=" Clínica Geral">
+                                <option value="Consulta Clínica Geral" {{ 'selected' if patient and patient.specialty == 'Consulta Clínica Geral' else '' }}>Consulta Clínica Geral</option>
+                                <option value="Hemograma completo" {{ 'selected' if patient and patient.specialty == 'Hemograma completo' else '' }}>Hemograma completo</option>
+                                <option value="Glicemia em jejum" {{ 'selected' if patient and patient.specialty == 'Glicemia em jejum' else '' }}>Glicemia em jejum</option>
+                                <option value="Colesterol total e frações" {{ 'selected' if patient and patient.specialty == 'Colesterol total e frações' else '' }}>Colesterol total e frações</option>
+                                <option value="Urina tipo I" {{ 'selected' if patient and patient.specialty == 'Urina tipo I' else '' }}>Urina tipo I</option>
+                            </optgroup>
+                            
+                            <optgroup label=" Cardiologia">
+                                <option value="Consulta Cardiologia" {{ 'selected' if patient and patient.specialty == 'Consulta Cardiologia' else '' }}>Consulta Cardiologia</option>
+                                <option value="Eletrocardiograma (ECG)" {{ 'selected' if patient and patient.specialty == 'Eletrocardiograma (ECG)' else '' }}>Eletrocardiograma (ECG)</option>
+                                <option value="Ecocardiograma" {{ 'selected' if patient and patient.specialty == 'Ecocardiograma' else '' }}>Ecocardiograma</option>
+                                <option value="Teste ergométrico" {{ 'selected' if patient and patient.specialty == 'Teste ergométrico' else '' }}>Teste ergométrico</option>
+                                <option value="Holter 24h" {{ 'selected' if patient and patient.specialty == 'Holter 24h' else '' }}>Holter 24h</option>
+                                <option value="MAPA" {{ 'selected' if patient and patient.specialty == 'MAPA' else '' }}>MAPA</option>
+                            </optgroup>
+                            
+                            <optgroup label=" Pneumologia">
+                                <option value="Consulta Pneumologia" {{ 'selected' if patient and patient.specialty == 'Consulta Pneumologia' else '' }}>Consulta Pneumologia</option>
+                                <option value="Espirometria" {{ 'selected' if patient and patient.specialty == 'Espirometria' else '' }}>Espirometria</option>
+                                <option value="Radiografia de tórax" {{ 'selected' if patient and patient.specialty == 'Radiografia de tórax' else '' }}>Radiografia de tórax</option>
+                                <option value="Tomografia de tórax" {{ 'selected' if patient and patient.specialty == 'Tomografia de tórax' else '' }}>Tomografia de tórax</option>
+                            </optgroup>
+                            
+                            <optgroup label="🍽️ Gastroenterologia">
+                                <option value="Consulta Gastroenterologia" {{ 'selected' if patient and patient.specialty == 'Consulta Gastroenterologia' else '' }}>Consulta Gastroenterologia</option>
+                                <option value="Endoscopia digestiva alta" {{ 'selected' if patient and patient.specialty == 'Endoscopia digestiva alta' else '' }}>Endoscopia digestiva alta</option>
+                                <option value="Colonoscopia" {{ 'selected' if patient and patient.specialty == 'Colonoscopia' else '' }}>Colonoscopia</option>
+                                <option value="Ultrassom abdominal" {{ 'selected' if patient and patient.specialty == 'Ultrassom abdominal' else '' }}>Ultrassom abdominal</option>
+                            </optgroup>
+                            
+                            <optgroup label="🧠 Neurologia">
+                                <option value="Consulta Neurologia" {{ 'selected' if patient and patient.specialty == 'Consulta Neurologia' else '' }}>Consulta Neurologia</option>
+                                <option value="Eletroencefalograma (EEG)" {{ 'selected' if patient and patient.specialty == 'Eletroencefalograma (EEG)' else '' }}>Eletroencefalograma (EEG)</option>
+                                <option value="Ressonância magnética de encéfalo" {{ 'selected' if patient and patient.specialty == 'Ressonância magnética de encéfalo' else '' }}>Ressonância magnética de encéfalo</option>
+                                <option value="Tomografia de crânio" {{ 'selected' if patient and patient.specialty == 'Tomografia de crânio' else '' }}>Tomografia de crânio</option>
+                            </optgroup>
+                            
+                            <optgroup label="🦴 Ortopedia">
+                                <option value="Consulta Ortopedia" {{ 'selected' if patient and patient.specialty == 'Consulta Ortopedia' else '' }}>Consulta Ortopedia</option>
+                                <option value="Radiografia óssea" {{ 'selected' if patient and patient.specialty == 'Radiografia óssea' else '' }}>Radiografia óssea</option>
+                                <option value="Ressonância magnética articular" {{ 'selected' if patient and patient.specialty == 'Ressonância magnética articular' else '' }}>Ressonância magnética articular</option>
+                                <option value="Densitometria óssea" {{ 'selected' if patient and patient.specialty == 'Densitometria óssea' else '' }}>Densitometria óssea</option>
+                            </optgroup>
+                            
+                            <optgroup label="🩸 Endocrinologia">
+                                <option value="Consulta Endocrinologia" {{ 'selected' if patient and patient.specialty == 'Consulta Endocrinologia' else '' }}>Consulta Endocrinologia</option>
+                                <option value="Dosagem hormonal" {{ 'selected' if patient and patient.specialty == 'Dosagem hormonal' else '' }}>Dosagem hormonal</option>
+                                <option value="Hemoglobina glicada" {{ 'selected' if patient and patient.specialty == 'Hemoglobina glicada' else '' }}>Hemoglobina glicada</option>
+                                <option value="Ultrassom de tireoide" {{ 'selected' if patient and patient.specialty == 'Ultrassom de tireoide' else '' }}>Ultrassom de tireoide</option>
+                            </optgroup>
+                            
+                            <optgroup label="👩‍⚕️ Ginecologia">
+                                <option value="Consulta Ginecologia" {{ 'selected' if patient and patient.specialty == 'Consulta Ginecologia' else '' }}>Consulta Ginecologia</option>
+                                <option value="Papanicolau" {{ 'selected' if patient and patient.specialty == 'Papanicolau' else '' }}>Papanicolau</option>
+                                <option value="Ultrassom transvaginal" {{ 'selected' if patient and patient.specialty == 'Ultrassom transvaginal' else '' }}>Ultrassom transvaginal</option>
+                                <option value="Ultrassom obstétrico" {{ 'selected' if patient and patient.specialty == 'Ultrassom obstétrico' else '' }}>Ultrassom obstétrico</option>
+                            </optgroup>
+                            
+                            <optgroup label="🔬 Urologia">
+                                <option value="Consulta Urologia" {{ 'selected' if patient and patient.specialty == 'Consulta Urologia' else '' }}>Consulta Urologia</option>
+                                <option value="PSA" {{ 'selected' if patient and patient.specialty == 'PSA' else '' }}>PSA</option>
+                                <option value="Ultrassom de próstata" {{ 'selected' if patient and patient.specialty == 'Ultrassom de próstata' else '' }}>Ultrassom de próstata</option>
+                                <option value="Urocultura" {{ 'selected' if patient and patient.specialty == 'Urocultura' else '' }}>Urocultura</option>
+                            </optgroup>
+                            
+                            <optgroup label="👁️ Oftalmologia">
+                                <option value="Consulta Oftalmologia" {{ 'selected' if patient and patient.specialty == 'Consulta Oftalmologia' else '' }}>Consulta Oftalmologia</option>
+                                <option value="Exame de vista" {{ 'selected' if patient and patient.specialty == 'Exame de vista' else '' }}>Exame de vista</option>
+                                <option value="Tonometria" {{ 'selected' if patient and patient.specialty == 'Tonometria' else '' }}>Tonometria</option>
+                            </optgroup>
+                            
+                            <optgroup label="🎯 Oncologia">
+                                <option value="Consulta Oncologia" {{ 'selected' if patient and patient.specialty == 'Consulta Oncologia' else '' }}>Consulta Oncologia</option>
+                                <option value="Quimioterapia" {{ 'selected' if patient and patient.specialty == 'Quimioterapia' else '' }}>Quimioterapia</option>
+                                <option value="Radioterapia" {{ 'selected' if patient and patient.specialty == 'Radioterapia' else '' }}>Radioterapia</option>
+                                <option value="PET-CT oncológico" {{ 'selected' if patient and patient.specialty == 'PET-CT oncológico' else '' }}>PET-CT oncológico</option>
+                            </optgroup>
+                            
+                            <optgroup label="💉 Hematologia">
+                                <option value="Consulta Hematologia" {{ 'selected' if patient and patient.specialty == 'Consulta Hematologia' else '' }}>Consulta Hematologia</option>
+                                <option value="Hemodiálise" {{ 'selected' if patient and patient.specialty == 'Hemodiálise' else '' }}>Hemodiálise</option>
+                                <option value="Mielograma" {{ 'selected' if patient and patient.specialty == 'Mielograma' else '' }}>Mielograma</option>
+                            </optgroup>
+                            
+                            <optgroup label="🔬 Outros">
+                                <option value="Punção lombar" {{ 'selected' if patient and patient.specialty == 'Punção lombar' else '' }}>Punção lombar</option>
+                                <option value="Doppler transcraniano" {{ 'selected' if patient and patient.specialty == 'Doppler transcraniano' else '' }}>Doppler transcraniano</option>
+                                <option value="Outro" {{ 'selected' if patient and patient.specialty == 'Outro' else '' }}>Outro (especificar abaixo)</option>
+                            </optgroup>
                         </select>
                     </div>
                     
+                    <div class="form-group" id="other_specialty_field" style="display: none;">
+                        <label class="form-label" for="other_specialty">Especificar Outra Especialidade/Exame:</label>
+                        <input type="text" id="other_specialty" name="other_specialty" class="form-input" 
+                               value="{{ patient.other_specialty if patient else '' }}" 
+                               placeholder="Digite a especialidade ou exame específico">
+                    </div>
+                </div>
+
+                <!-- DADOS DO ACOMPANHANTE -->
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">👥 Dados do Acompanhante</h4>
+                    
                     <div class="form-group">
-                        <label class="form-label" for="special_needs">Necessidades Especiais:</label>
-                        <select id="special_needs" name="special_needs" class="form-select">
-                            <option value="">Nenhuma</option>
-                            <option value="cadeira_rodas" {{ 'selected' if patient and patient.special_needs == 'cadeira_rodas' else '' }}>Cadeira de Rodas</option>
-                            <option value="maca" {{ 'selected' if patient and patient.special_needs == 'maca' else '' }}>Maca</option>
-                            <option value="oxigenio" {{ 'selected' if patient and patient.special_needs == 'oxigenio' else '' }}>Oxigênio</option>
-                            <option value="monitor_cardiaco" {{ 'selected' if patient and patient.special_needs == 'monitor_cardiaco' else '' }}>Monitor Cardíaco</option>
-                        </select>
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="has_companion" name="has_companion" value="1" 
+                                   {{ 'checked' if patient and patient.has_companion else '' }}
+                                   onchange="toggleCompanionFields()">
+                            Paciente terá acompanhante
+                        </label>
+                    </div>
+                    
+                    <div id="companion_fields" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label" for="companion_count">Número de Acompanhantes:</label>
+                                <select id="companion_count" name="companion_count" class="form-select">
+                                    <option value="0">0</option>
+                                    <option value="1" {{ 'selected' if patient and patient.companion_count == 1 else '' }}>1</option>
+                                    <option value="2" {{ 'selected' if patient and patient.companion_count == 2 else '' }}>2</option>
+                                    <option value="3" {{ 'selected' if patient and patient.companion_count == 3 else '' }}>3</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="companion_name">Nome do Acompanhante:</label>
+                                <input type="text" id="companion_name" name="companion_name" class="form-input" 
+                                       value="{{ patient.companion_name if patient else '' }}" 
+                                       placeholder="Nome completo do acompanhante" style="text-transform: uppercase;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="companion_rg">RG do Acompanhante:</label>
+                            <input type="text" id="companion_rg" name="companion_rg" class="form-input" 
+                                   value="{{ patient.companion_rg if patient else '' }}" 
+                                   placeholder="00.000.000-0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DADOS COMPLEMENTARES -->
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">📝 Dados Complementares</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="emergency_contact">Contato de Emergência:</label>
+                            <input type="text" id="emergency_contact" name="emergency_contact" class="form-input" 
+                                   value="{{ patient.emergency_contact if patient else '' }}" 
+                                   placeholder="Nome do contato">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="emergency_phone">Telefone de Emergência:</label>
+                            <input type="text" id="emergency_phone" name="emergency_phone" class="form-input" 
+                                   value="{{ patient.emergency_phone if patient else '' }}" 
+                                   placeholder="(00) 00000-0000">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="priority_type">Tipo de Prioridade:</label>
+                            <select id="priority_type" name="priority_type" class="form-select">
+                                <option value="normal" {{ 'selected' if patient and patient.priority_type == 'normal' else '' }}>Normal</option>
+                                <option value="idoso" {{ 'selected' if patient and patient.priority_type == 'idoso' else '' }}>Idoso</option>
+                                <option value="gestante" {{ 'selected' if patient and patient.priority_type == 'gestante' else '' }}>Gestante</option>
+                                <option value="crianca_autista" {{ 'selected' if patient and patient.priority_type == 'crianca_autista' else '' }}>Criança Autista</option>
+                                <option value="oncologia" {{ 'selected' if patient and patient.priority_type == 'oncologia' else '' }}>Oncologia</option>
+                                <option value="bebe_prematuro" {{ 'selected' if patient and patient.priority_type == 'bebe_prematuro' else '' }}>Bebê Prematuro</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="special_needs">Necessidades Especiais:</label>
+                            <select id="special_needs" name="special_needs" class="form-select">
+                                <option value="">Nenhuma</option>
+                                <option value="cadeira_rodas" {{ 'selected' if patient and patient.special_needs == 'cadeira_rodas' else '' }}>Cadeira de Rodas</option>
+                                <option value="maca" {{ 'selected' if patient and patient.special_needs == 'maca' else '' }}>Maca</option>
+                                <option value="oxigenio" {{ 'selected' if patient and patient.special_needs == 'oxigenio' else '' }}>Oxigênio</option>
+                                <option value="monitor_cardiaco" {{ 'selected' if patient and patient.special_needs == 'monitor_cardiaco' else '' }}>Monitor Cardíaco</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 
@@ -103,4 +304,38 @@
         </div>
     </div>
 </div>
+
+<script>
+// Mostrar campo de especialidade personalizada
+function toggleOtherSpecialty() {
+    const specialty = document.getElementById('specialty');
+    const otherField = document.getElementById('other_specialty_field');
+    
+    if (specialty.value === 'Outro') {
+        otherField.style.display = 'block';
+        document.getElementById('other_specialty').required = true;
+    } else {
+        otherField.style.display = 'none';
+        document.getElementById('other_specialty').required = false;
+    }
+}
+
+// Mostrar campos do acompanhante
+function toggleCompanionFields() {
+    const hasCompanion = document.getElementById('has_companion');
+    const companionFields = document.getElementById('companion_fields');
+    
+    if (hasCompanion.checked) {
+        companionFields.style.display = 'block';
+    } else {
+        companionFields.style.display = 'none';
+    }
+}
+
+// Inicializar campos na carga da página
+document.addEventListener('DOMContentLoaded', function() {
+    toggleOtherSpecialty();
+    toggleCompanionFields();
+});
+</script>
 {% endblock %}

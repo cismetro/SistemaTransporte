@@ -4,87 +4,346 @@
 
 {% block content %}
 <div style="padding: 2rem 0;">
-    <h1>🚗 {% if driver %}Editar{% else %}Novo{% endif %} Motorista</h1>
+    <!-- Cabeçalho -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1>🚗 {% if driver %}Editar{% else %}Novo{% endif %} Motorista</h1>
+            {% if driver %}
+                <p style="color: var(--gray-color); margin: 0.5rem 0;">Editando dados de: <strong>{{ driver.name }}</strong></p>
+            {% endif %}
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="showPrefeituraInfo()" class="btn" style="background-color: var(--color-60); color: white;">
+                ℹ️ Info Prefeitura
+            </button>
+            {% if driver %}
+                <a href="/drivers/{{ driver.id }}/view" class="btn btn-secondary">👁️ Visualizar</a>
+            {% endif %}
+            <a href="/drivers" class="btn btn-secondary">🔙 Voltar</a>
+        </div>
+    </div>
     
     <div class="card">
         <div class="card-header">
-            <h3>{% if driver %}Editar Dados do{% else %}Cadastrar Novo{% endif %} Motorista</h3>
+            <h3>{% if driver %}✏️ Editar Dados do{% else %}➕ Cadastrar Novo{% endif %} Motorista</h3>
         </div>
         <div class="card-body">
             <form method="POST">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <!-- TIPO DE VÍNCULO -->
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">🏢 Tipo de Vínculo Empregatício</h4>
+                    
                     <div class="form-group">
-                        <label class="form-label" for="name">Nome Completo: *</label>
-                        <input type="text" id="name" name="name" class="form-input" 
-                               value="{{ driver.name if driver else '' }}" 
-                               placeholder="Nome completo do motorista" required>
+                        <label class="form-label">Tipo de Vínculo: *</label>
+                        <div style="display: flex; gap: 2rem; margin-top: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="radio" name="employment_type" value="prefeitura" 
+                                       {{ 'checked' if not driver or driver.employment_type == 'prefeitura' else '' }}
+                                       onchange="toggleCompanyFields()" required>
+                                🏛️ Prefeitura Municipal de Cosmópolis
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="radio" name="employment_type" value="terceirizado" 
+                                       {{ 'checked' if driver and driver.employment_type == 'terceirizado' else '' }}
+                                       onchange="toggleCompanyFields()" required>
+                                🏢 Empresa Terceirizada
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DADOS DA EMPRESA (só aparece se terceirizado) -->
+                <div id="company_fields" style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: none;">
+                    <h4 style="color: var(--warning-color); margin-bottom: 1rem;">🏢 Dados da Empresa Terceirizada</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="company_name">Razão Social da Empresa:</label>
+                            <input type="text" id="company_name" name="company_name" class="form-input" 
+                                   value="{{ driver.company_name if driver else '' }}" 
+                                   placeholder="Nome completo da empresa">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="company_cnpj">CNPJ:</label>
+                            <input type="text" id="company_cnpj" name="company_cnpj" class="form-input" 
+                                   value="{{ driver.company_cnpj if driver else '' }}" 
+                                   placeholder="00.000.000/0000-00" maxlength="18">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="company_contact">Pessoa de Contato:</label>
+                            <input type="text" id="company_contact" name="company_contact" class="form-input" 
+                                   value="{{ driver.company_contact if driver else '' }}" 
+                                   placeholder="Nome do responsável">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="company_phone">Telefone da Empresa:</label>
+                            <input type="text" id="company_phone" name="company_phone" class="form-input" 
+                                   value="{{ driver.company_phone if driver else '' }}" 
+                                   placeholder="(00) 0000-0000">
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label" for="cpf">CPF: *</label>
-                        <input type="text" id="cpf" name="cpf" class="form-input" 
-                               value="{{ driver.cpf if driver else '' }}" 
-                               placeholder="000.000.000-00" maxlength="14" required>
+                        <label class="form-label" for="company_address">Endereço da Empresa:</label>
+                        <textarea id="company_address" name="company_address" class="form-textarea" rows="2" 
+                                  placeholder="Endereço completo da empresa">{{ driver.company_address if driver else '' }}</textarea>
                     </div>
                 </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label" for="cnh">Número da CNH: *</label>
-                        <input type="text" id="cnh" name="cnh" class="form-input" 
-                               value="{{ driver.cnh if driver else '' }}" 
-                               placeholder="00000000000" required>
+
+                <!-- DADOS PESSOAIS -->
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">👤 Dados Pessoais</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="name">Nome Completo: *</label>
+                            <input type="text" id="name" name="name" class="form-input" 
+                                   value="{{ driver.name if driver else '' }}" 
+                                   placeholder="Nome completo do motorista" required style="text-transform: uppercase;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="cpf">CPF: *</label>
+                            <input type="text" id="cpf" name="cpf" class="form-input" 
+                                   value="{{ driver.cpf if driver else '' }}" 
+                                   placeholder="000.000.000-00" maxlength="14" required>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="phone">Telefone Pessoal:</label>
+                            <input type="text" id="phone" name="phone" class="form-input" 
+                                   value="{{ driver.phone if driver else '' }}" 
+                                   placeholder="(00) 00000-0000">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="hire_date">Data de Contratação: *</label>
+                            <input type="date" id="hire_date" name="hire_date" class="form-input" 
+                                   value="{{ driver.hire_date if driver else '' }}" required>
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label" for="cnh_category">Categoria CNH: *</label>
-                        <select id="cnh_category" name="cnh_category" class="form-select" required>
-                            <option value="">Selecione...</option>
-                            <option value="B" {{ 'selected' if driver and driver.cnh_category == 'B' else '' }}>B</option>
-                            <option value="C" {{ 'selected' if driver and driver.cnh_category == 'C' else '' }}>C</option>
-                            <option value="D" {{ 'selected' if driver and driver.cnh_category == 'D' else '' }}>D</option>
-                            <option value="E" {{ 'selected' if driver and driver.cnh_category == 'E' else '' }}>E</option>
-                        </select>
+                        <label class="form-label" for="address">Endereço Pessoal:</label>
+                        <textarea id="address" name="address" class="form-textarea" rows="3" 
+                                  placeholder="Endereço residencial completo">{{ driver.address if driver else '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- DADOS DA CNH -->
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">🪪 Dados da CNH</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="cnh">Número da CNH: *</label>
+                            <input type="text" id="cnh" name="cnh" class="form-input" 
+                                   value="{{ driver.cnh if driver else '' }}" 
+                                   placeholder="00000000000" maxlength="11" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="cnh_category">Categoria CNH: *</label>
+                            <select id="cnh_category" name="cnh_category" class="form-select" required>
+                                <option value="">Selecione...</option>
+                                <option value="A" {{ 'selected' if driver and driver.cnh_category == 'A' else '' }}>A - Motocicleta</option>
+                                <option value="B" {{ 'selected' if driver and driver.cnh_category == 'B' else '' }}>B - Carro</option>
+                                <option value="C" {{ 'selected' if driver and driver.cnh_category == 'C' else '' }}>C - Caminhão</option>
+                                <option value="D" {{ 'selected' if driver and driver.cnh_category == 'D' else '' }}>D - Ônibus/Van</option>
+                                <option value="E" {{ 'selected' if driver and driver.cnh_category == 'E' else '' }}>E - Carreta</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="cnh_expiry">Validade CNH: *</label>
+                            <input type="date" id="cnh_expiry" name="cnh_expiry" class="form-input" 
+                                   value="{{ driver.cnh_expiry if driver else '' }}" required>
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label" for="cnh_expiry">Validade CNH: *</label>
-                        <input type="date" id="cnh_expiry" name="cnh_expiry" class="form-input" 
-                               value="{{ driver.cnh_expiry if driver else '' }}" required>
+                    <!-- Informações sobre categorias -->
+                    <div style="margin-top: 1rem; padding: 1rem; background-color: var(--color-90); border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                        <h5 style="margin-bottom: 0.5rem;">ℹ️ Informações sobre Categorias:</h5>
+                        <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-color);">
+                            <li><strong>Categoria D:</strong> Necessária para transporte de passageiros (vans, micro-ônibus)</li>
+                            <li><strong>Categoria C:</strong> Veículos de carga acima de 3.500kg</li>
+                            <li><strong>Categoria B:</strong> Carros de passeio e utilitários leves</li>
+                        </ul>
                     </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label class="form-label" for="phone">Telefone:</label>
-                        <input type="text" id="phone" name="phone" class="form-input" 
-                               value="{{ driver.phone if driver else '' }}" 
-                               placeholder="(00) 00000-0000">
-                    </div>
+                <!-- STATUS -->
+                {% if driver %}
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">⚙️ Status do Motorista</h4>
                     
                     <div class="form-group">
-                        <label class="form-label" for="hire_date">Data de Contratação: *</label>
-                        <input type="date" id="hire_date" name="hire_date" class="form-input" 
-                               value="{{ driver.hire_date if driver else '' }}" required>
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" name="is_active" value="1" 
+                                   {{ 'checked' if driver.is_active else '' }}>
+                            Motorista ativo no sistema
+                        </label>
+                        <small style="color: var(--gray-color); margin-top: 0.25rem; display: block;">
+                            Desmarque para inativar o motorista (não aparecerá nas listas de agendamento)
+                        </small>
                     </div>
                 </div>
+                {% endif %}
                 
-                <div class="form-group">
-                    <label class="form-label" for="address">Endereço:</label>
-                    <textarea id="address" name="address" class="form-textarea" rows="3" 
-                              placeholder="Endereço completo">{{ driver.address if driver else '' }}</textarea>
-                </div>
-                
-                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary">
+                <!-- BOTÕES DE AÇÃO -->
+                <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center;">
+                    <button type="submit" class="btn btn-primary" style="min-width: 200px;">
                         💾 {% if driver %}Atualizar{% else %}Cadastrar{% endif %} Motorista
                     </button>
-                    <a href="/drivers" class="btn btn-secondary">
-                        ❌ Cancelar
-                    </a>
+                    
+                    {% if driver %}
+                        <a href="/drivers/{{ driver.id }}/view" class="btn btn-secondary">
+                            ❌ Cancelar Edição
+                        </a>
+                    {% else %}
+                        <a href="/drivers" class="btn btn-secondary">
+                            ❌ Cancelar
+                        </a>
+                    {% endif %}
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- Modal de Informações da Prefeitura -->
+<div id="prefeituraModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 10px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 2px solid var(--primary-color); padding-bottom: 1rem;">
+            <h2 style="color: var(--primary-color); margin: 0;">🏛️ Prefeitura Municipal de Cosmópolis</h2>
+            <button onclick="hidePrefeituraInfo()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-color);">✕</button>
+        </div>
+        
+        <div style="display: grid; gap: 1.5rem;">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🏛️</div>
+                <h3 style="color: var(--primary-color); margin: 0;">Administração 2025-2028</h3>
+            </div>
+            
+            <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px;">
+                <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">📍 Endereço</h4>
+                <p style="margin: 0;">Rua Dr. Campos Sales, 398 - Centro</p>
+                <p style="margin: 0;">Cosmópolis/SP | CEP: 13.150-000</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">📞 Telefone</h4>
+                    <p style="margin: 0; font-weight: bold;">(19) 3812-8000</p>
+                </div>
+                
+                <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">📧 E-mail</h4>
+                    <p style="margin: 0; font-weight: bold;">comunicacao@cosmopolis.sp.gov.br</p>
+                </div>
+            </div>
+            
+            <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px;">
+                <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">🕒 Horário de Atendimento</h4>
+                <p style="margin: 0;">Segunda a sexta-feira, das 08h00 às 16h00</p>
+            </div>
+            
+            <div style="background-color: var(--color-95); padding: 1rem; border-radius: 8px;">
+                <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">🌐 Site Oficial</h4>
+                <p style="margin: 0;">
+                    <a href="https://cosmopolis.sp.gov.br/" target="_blank" style="color: var(--primary-color); text-decoration: none;">
+                        cosmopolis.sp.gov.br ↗️
+                    </a>
+                </p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <button onclick="hidePrefeituraInfo()" class="btn btn-primary">
+                Fechar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Função para mostrar/esconder campos da empresa
+function toggleCompanyFields() {
+    const employmentType = document.querySelector('input[name="employment_type"]:checked');
+    const companyFields = document.getElementById('company_fields');
+    
+    if (employmentType && employmentType.value === 'terceirizado') {
+        companyFields.style.display = 'block';
+        // Tornar campos obrigatórios
+        document.getElementById('company_name').required = true;
+        document.getElementById('company_cnpj').required = true;
+    } else {
+        companyFields.style.display = 'none';
+        // Remover obrigatoriedade
+        document.getElementById('company_name').required = false;
+        document.getElementById('company_cnpj').required = false;
+    }
+}
+
+// Funções do modal
+function showPrefeituraInfo() {
+    document.getElementById('prefeituraModal').style.display = 'block';
+}
+
+function hidePrefeituraInfo() {
+    document.getElementById('prefeituraModal').style.display = 'none';
+}
+
+// Máscaras para campos
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar campos da empresa
+    toggleCompanyFields();
+    
+    // Máscara CPF
+    const cpfInput = document.getElementById('cpf');
+    cpfInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        e.target.value = value;
+    });
+    
+    // Máscara CNPJ
+    const cnpjInput = document.getElementById('company_cnpj');
+    cnpjInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        value = value.replace(/(\d{2})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1/$2');
+        value = value.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+        e.target.value = value;
+    });
+    
+    // Máscara telefone
+    const phoneInputs = document.querySelectorAll('input[id$="_phone"], input[name="phone"]');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+            e.target.value = value;
+        });
+    });
+    
+    // Máscara CNH (só números)
+    const cnhInput = document.getElementById('cnh');
+    cnhInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+});
+</script>
 {% endblock %}

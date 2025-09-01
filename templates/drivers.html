@@ -9,47 +9,601 @@
         <a href="/drivers/new" class="btn btn-primary">➕ Novo Motorista</a>
     </div>
     
+    <!-- Estatísticas Principais -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div class="stat-card" style="padding: 1rem;">
+            <div class="stat-number" style="font-size: 2rem;">{{ drivers|length }}</div>
+            <div class="stat-label">
+                {% if search or status_filter != 'all' or employment_filter != 'all' or cnh_filter != 'all' %}
+                    Motoristas Filtrados
+                {% else %}
+                    Total de Motoristas
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="stat-card" style="padding: 1rem;">
+            <div class="stat-number" style="font-size: 2rem; color: #96CEB4;">
+                {% set categoria_d = 0 %}
+                {% for driver in drivers %}
+                    {% if driver.cnh_category == 'D' %}
+                        {% set categoria_d = categoria_d + 1 %}
+                    {% endif %}
+                {% endfor %}
+                {{ categoria_d }}
+            </div>
+            <div class="stat-label">
+                <span style="background-color: #96CEB4; color: white; padding: 0.2rem 0.4rem; border-radius: 10px; font-size: 0.7rem; margin-right: 0.5rem;">D</span>
+                CNH Categoria D
+            </div>
+        </div>
+        
+        <div class="stat-card" style="padding: 1rem;">
+            <div class="stat-number" style="font-size: 2rem; color: var(--primary-color);">
+                {% set prefeitura = 0 %}
+                {% for driver in drivers %}
+                    {% if driver.employment_type == 'prefeitura' or not driver.employment_type %}
+                        {% set prefeitura = prefeitura + 1 %}
+                    {% endif %}
+                {% endfor %}
+                {{ prefeitura }}
+            </div>
+            <div class="stat-label">
+                <span style="background-color: var(--primary-color); color: white; padding: 0.2rem 0.4rem; border-radius: 10px; font-size: 0.7rem; margin-right: 0.5rem;">🏛️</span>
+                Prefeitura
+            </div>
+        </div>
+        
+        <div class="stat-card" style="padding: 1rem;">
+            <div class="stat-number" style="font-size: 2rem; color: #FFA726;">
+                {% set terceirizados = 0 %}
+                {% for driver in drivers %}
+                    {% if driver.employment_type == 'terceirizado' %}
+                        {% set terceirizados = terceirizados + 1 %}
+                    {% endif %}
+                {% endfor %}
+                {{ terceirizados }}
+            </div>
+            <div class="stat-label">
+                <span style="background-color: #FFA726; color: white; padding: 0.2rem 0.4rem; border-radius: 10px; font-size: 0.7rem; margin-right: 0.5rem;">🏢</span>
+                Terceirizados
+            </div>
+        </div>
+        
+        <div class="stat-card" style="padding: 1rem;">
+            <div class="stat-number" style="font-size: 2rem; color: var(--success-color);">
+                {% set ativos = 0 %}
+                {% for driver in drivers %}
+                    {% if driver.is_active %}
+                        {% set ativos = ativos + 1 %}
+                    {% endif %}
+                {% endfor %}
+                {{ ativos }}
+            </div>
+            <div class="stat-label">
+                <span style="background-color: var(--success-color); color: white; padding: 0.2rem 0.4rem; border-radius: 10px; font-size: 0.7rem; margin-right: 0.5rem;">✅</span>
+                Ativos
+            </div>
+        </div>
+        
+        <div class="stat-card" style="padding: 1rem;">
+            <div class="stat-number" style="font-size: 2rem; color: var(--danger-color);">
+                {% set inativos = 0 %}
+                {% for driver in drivers %}
+                    {% if not driver.is_active %}
+                        {% set inativos = inativos + 1 %}
+                    {% endif %}
+                {% endfor %}
+                {{ inativos }}
+            </div>
+            <div class="stat-label">
+                <span style="background-color: var(--danger-color); color: white; padding: 0.2rem 0.4rem; border-radius: 10px; font-size: 0.7rem; margin-right: 0.5rem;">❌</span>
+                Inativos
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug das Informações (temporário) -->
+    {% if drivers and drivers|length > 0 %}
+    <div class="card" style="margin-bottom: 2rem; background-color: #f8f9fa; border-left: 4px solid #17a2b8;">
+        <div class="card-body" style="padding: 1rem;">
+            <h4 style="color: #17a2b8; margin-bottom: 0.5rem; font-size: 1rem;">🔍 Debug - Primeiro Motorista:</h4>
+            {% set first_driver = drivers[0] %}
+            <div style="font-family: monospace; font-size: 0.8rem; display: grid; gap: 0.25rem;">
+                <div><strong>Nome:</strong> {{ first_driver.name or 'NULL' }}</div>
+                <div><strong>CNH Categoria:</strong> {{ first_driver.cnh_category or 'NULL' }}</div>
+                <div><strong>Employment Type:</strong> 
+                    {% if first_driver.employment_type %}
+                        "{{ first_driver.employment_type }}"
+                    {% else %}
+                        NULL
+                    {% endif %}
+                </div>
+                <div><strong>Is Active:</strong> {{ first_driver.is_active }} ({{ "Truthy" if first_driver.is_active else "Falsy" }})</div>
+                <div><strong>Company Name:</strong> 
+                    {% if first_driver.company_name %}
+                        {{ first_driver.company_name }}
+                    {% else %}
+                        NULL
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Contagem Manual -->
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                <strong>Contagem Manual:</strong>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
+                    {% set manual_prefeitura = 0 %}
+                    {% set manual_terceirizado = 0 %}
+                    {% set manual_ativos = 0 %}
+                    {% set manual_categoria_d = 0 %}
+                    
+                    {% for driver in drivers %}
+                        {% if driver.employment_type == 'prefeitura' or not driver.employment_type %}
+                            {% set manual_prefeitura = manual_prefeitura + 1 %}
+                        {% endif %}
+                        {% if driver.employment_type == 'terceirizado' %}
+                            {% set manual_terceirizado = manual_terceirizado + 1 %}
+                        {% endif %}
+                        {% if driver.is_active %}
+                            {% set manual_ativos = manual_ativos + 1 %}
+                        {% endif %}
+                        {% if driver.cnh_category == 'D' %}
+                            {% set manual_categoria_d = manual_categoria_d + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <div>Prefeitura: {{ manual_prefeitura }}</div>
+                    <div>Terceirizados: {{ manual_terceirizado }}</div>
+                    <div>Ativos: {{ manual_ativos }}</div>
+                    <div>CNH D: {{ manual_categoria_d }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Resumo Visual dos Filtros Aplicados -->
+    {% if search or status_filter != 'all' or employment_filter != 'all' or cnh_filter != 'all' %}
+    <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary-color);">
+        <div class="card-body" style="padding: 1rem;">
+            <h4 style="color: var(--primary-color); margin-bottom: 0.5rem; font-size: 1rem;">🔍 Filtros Aplicados:</h4>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                {% if search %}
+                    <span style="background-color: var(--color-80); color: var(--text-color); padding: 0.25rem 0.5rem; border-radius: 15px; font-size: 0.8rem;">
+                        🔍 Busca: "{{ search }}"
+                    </span>
+                {% endif %}
+                {% if status_filter != 'all' %}
+                    <span style="background-color: {{ 'var(--success-color)' if status_filter == 'active' else 'var(--danger-color)' }}; color: white; padding: 0.25rem 0.5rem; border-radius: 15px; font-size: 0.8rem;">
+                        {{ '✅ Ativos' if status_filter == 'active' else '❌ Inativos' }}
+                    </span>
+                {% endif %}
+                {% if employment_filter != 'all' %}
+                    <span style="background-color: {{ 'var(--primary-color)' if employment_filter == 'prefeitura' else '#FFA726' }}; color: white; padding: 0.25rem 0.5rem; border-radius: 15px; font-size: 0.8rem;">
+                        {{ '🏛️ Prefeitura' if employment_filter == 'prefeitura' else '🏢 Terceirizados' }}
+                    </span>
+                {% endif %}
+                {% if cnh_filter != 'all' %}
+                    {% set cnh_colors = {'A': '#FF6B6B', 'B': '#4ECDC4', 'C': '#45B7D1', 'D': '#96CEB4', 'E': '#FECA57'} %}
+                    <span style="background-color: {{ cnh_colors[cnh_filter] }}; color: white; padding: 0.25rem 0.5rem; border-radius: 15px; font-size: 0.8rem;">
+                        CNH {{ cnh_filter }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filtros e Busca -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-body">
+            <form method="GET" style="display: grid; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="search">Buscar por Nome ou CNH:</label>
+                        <input type="text" id="search" name="search" class="form-input" 
+                               value="{{ search or '' }}" placeholder="Digite o nome ou número da CNH...">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="status_filter">Status:</label>
+                        <select id="status_filter" name="status_filter" class="form-select">
+                            <option value="all" {{ 'selected' if status_filter == 'all' else '' }}>Todos</option>
+                            <option value="active" {{ 'selected' if status_filter == 'active' else '' }}>Ativos</option>
+                            <option value="inactive" {{ 'selected' if status_filter == 'inactive' else '' }}>Inativos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="employment_filter">Vínculo:</label>
+                        <select id="employment_filter" name="employment_filter" class="form-select">
+                            <option value="all" {{ 'selected' if employment_filter == 'all' else '' }}>Todos</option>
+                            <option value="prefeitura" {{ 'selected' if employment_filter == 'prefeitura' else '' }}>Prefeitura</option>
+                            <option value="terceirizado" {{ 'selected' if employment_filter == 'terceirizado' else '' }}>Terceirizado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="cnh_filter">CNH:</label>
+                        <select id="cnh_filter" name="cnh_filter" class="form-select">
+                            <option value="all" {{ 'selected' if cnh_filter == 'all' else '' }}>Todas</option>
+                            <option value="A" {{ 'selected' if cnh_filter == 'A' else '' }}>A</option>
+                            <option value="B" {{ 'selected' if cnh_filter == 'B' else '' }}>B</option>
+                            <option value="C" {{ 'selected' if cnh_filter == 'C' else '' }}>C</option>
+                            <option value="D" {{ 'selected' if cnh_filter == 'D' else '' }}>D</option>
+                            <option value="E" {{ 'selected' if cnh_filter == 'E' else '' }}>E</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+                </div>
+                
+                {% if search or status_filter != 'all' or employment_filter != 'all' or cnh_filter != 'all' %}
+                <div style="text-align: center;">
+                    <a href="/drivers" class="btn btn-secondary">❌ Limpar Filtros</a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    
+    <!-- Legenda das Categorias CNH -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-body">
+            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">📋 Legenda das Categorias de CNH</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="background-color: #FF6B6B; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 30px; text-align: center;">A</span>
+                    <span>Motocicleta, motoneta e triciclo</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="background-color: #4ECDC4; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 30px; text-align: center;">B</span>
+                    <span>Carro, utilitários até 3.500kg</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="background-color: #45B7D1; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 30px; text-align: center;">C</span>
+                    <span>Caminhão acima de 3.500kg</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="background-color: #96CEB4; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 30px; text-align: center;">D</span>
+                    <span>Ônibus, van, micro-ônibus (passageiros)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="background-color: #FECA57; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 30px; text-align: center;">E</span>
+                    <span>Carreta, caminhão com reboque</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lista de Motoristas -->
     <div class="card">
         <div class="card-header">
-            <h3>Lista de Motoristas Ativos</h3>
+            <h3>Lista de Motoristas ({{ drivers|length }})</h3>
         </div>
         <div class="card-body">
             {% if drivers %}
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>CPF</th>
-                            <th>CNH</th>
-                            <th>Categoria</th>
-                            <th>Telefone</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for driver in drivers %}
-                        <tr>
-                            <td>{{ driver.name }}</td>
-                            <td>{{ driver.cpf }}</td>
-                            <td>{{ driver.cnh }}</td>
-                            <td>{{ driver.cnh_category }}</td>
-                            <td>{{ driver.phone or '-' }}</td>
-                            <td>
-                                <a href="/drivers/{{ driver.id }}/edit" class="btn" style="background-color: var(--color-60); color: white; padding: 0.25rem 0.5rem; font-size: 0.8rem;">✏️ Editar</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table class="table" style="font-size: 0.85rem;">
+                        <thead>
+                            <tr style="font-size: 0.8rem;">
+                                <th style="padding: 0.5rem;">Nome</th>
+                                <th style="padding: 0.5rem;">CPF</th>
+                                <th style="padding: 0.5rem;">CNH</th>
+                                <th style="padding: 0.5rem;">Cat.</th>
+                                <th style="padding: 0.5rem;">Validade</th>
+                                <th style="padding: 0.5rem;">Telefone</th>
+                                <th style="padding: 0.5rem;">Vínculo</th>
+                                <th style="padding: 0.5rem;">Status</th>
+                                <th style="padding: 0.5rem;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for driver in drivers %}
+                            <tr style="font-size: 0.8rem;">
+                                <td style="padding: 0.5rem;">
+                                    <strong style="font-size: 0.85rem;">{{ driver.name }}</strong>
+                                    {% if driver.employment_type == 'terceirizado' and driver.company_name %}
+                                        <br><small style="color: var(--gray-color); font-size: 0.7rem;">{{ driver.company_name }}</small>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 0.5rem;">{{ driver.cpf }}</td>
+                                <td style="padding: 0.5rem; font-family: monospace;">{{ driver.cnh }}</td>
+                                <td style="padding: 0.5rem; text-align: center;">
+                                    {% if driver.cnh_category == 'A' %}
+                                        <span style="background-color: #FF6B6B; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 25px; text-align: center; font-size: 0.7rem;">A</span>
+                                    {% elif driver.cnh_category == 'B' %}
+                                        <span style="background-color: #4ECDC4; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 25px; text-align: center; font-size: 0.7rem;">B</span>
+                                    {% elif driver.cnh_category == 'C' %}
+                                        <span style="background-color: #45B7D1; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 25px; text-align: center; font-size: 0.7rem;">C</span>
+                                    {% elif driver.cnh_category == 'D' %}
+                                        <span style="background-color: #96CEB4; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 25px; text-align: center; font-size: 0.7rem;">D</span>
+                                    {% elif driver.cnh_category == 'E' %}
+                                        <span style="background-color: #FECA57; color: white; padding: 0.25rem 0.5rem; border-radius: 50%; font-weight: bold; width: 25px; text-align: center; font-size: 0.7rem;">E</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 0.5rem;">
+                                    {% if driver.cnh_expiry %}
+                                        <span style="font-size: 0.75rem;">{{ driver.cnh_expiry }}</span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 0.5rem; font-size: 0.75rem;">{{ driver.phone or '-' }}</td>
+                                <td style="padding: 0.5rem;">
+                                    {% if driver.employment_type == 'terceirizado' %}
+                                        <span style="background-color: #FFA726; color: white; padding: 0.2rem 0.4rem; border-radius: 10px; font-size: 0.7rem;">🏢 Terceirizado</span>
+                                    {% else %}
+                                        <span style="background-color: var(--primary-color); color: white; padding: 0.2rem 0.4rem; border-radius: 10px; font-size: 0.7rem;">🏛️ Prefeitura</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 0.5rem;">
+                                    {% if driver.is_active %}
+                                        <span style="background-color: var(--success-color); color: white; padding: 0.2rem 0.4rem; border-radius: 10px; font-size: 0.7rem;">✅ Ativo</span>
+                                    {% else %}
+                                        <span style="background-color: var(--danger-color); color: white; padding: 0.2rem 0.4rem; border-radius: 10px; font-size: 0.7rem;">❌ Inativo</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 0.5rem;">
+                                    <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                                        <a href="/drivers/{{ driver.id }}/view" class="btn" style="background-color: var(--color-45); color: white; padding: 0.2rem 0.4rem; font-size: 0.7rem; text-decoration: none;">👁️</a>
+                                        <a href="/drivers/{{ driver.id }}/edit" class="btn" style="background-color: var(--color-60); color: white; padding: 0.2rem 0.4rem; font-size: 0.7rem; text-decoration: none;">✏️</a>
+                                        <button onclick="toggleDriverStatus({{ driver.id }}, {{ 'false' if driver.is_active else 'true' }})" class="btn" style="background-color: {{ 'var(--danger-color)' if driver.is_active else 'var(--success-color)' }}; color: white; padding: 0.2rem 0.4rem; font-size: 0.7rem; border: none; cursor: pointer;">
+                                            {{ '🚫' if driver.is_active else '✅' }}
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
             {% else %}
                 <div style="text-align: center; padding: 3rem;">
                     <div style="font-size: 4rem; margin-bottom: 1rem;">🚗</div>
-                    <h3>Nenhum motorista cadastrado</h3>
-                    <p>Comece cadastrando o primeiro motorista do sistema.</p>
-                    <a href="/drivers/new" class="btn btn-primary">➕ Cadastrar Primeiro Motorista</a>
+                    {% if search or status_filter != 'all' or employment_filter != 'all' or cnh_filter != 'all' %}
+                        <h3>Nenhum motorista encontrado</h3>
+                        <p>Não foram encontrados motoristas com os filtros aplicados.</p>
+                        <a href="/drivers" class="btn btn-secondary">Ver todos os motoristas</a>
+                    {% else %}
+                        <h3>Nenhum motorista cadastrado</h3>
+                        <p>Comece cadastrando o primeiro motorista ou adicione os dados de exemplo.</p>
+                        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+                            <a href="/drivers/new" class="btn btn-primary">➕ Cadastrar Primeiro Motorista</a>
+                        </div>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<!-- Modal de Confirmação Personalizado -->
+<div id="confirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(3px);">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 12px; padding: 2rem; max-width: 450px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.3); animation: modalSlideIn 0.3s ease;">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
+            <h3 style="color: var(--text-color); margin-bottom: 1rem; font-size: 1.25rem;">Confirmar Ação</h3>
+            <p id="confirmMessage" style="color: var(--gray-color); margin: 0; line-height: 1.5; white-space: pre-line;"></p>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button id="confirmCancel" class="btn" style="background-color: var(--color-80); color: var(--text-color); min-width: 120px; border: 2px solid var(--color-70); transition: all 0.2s ease;">
+                ❌ Cancelar
+            </button>
+            <button id="confirmOk" class="btn" style="background-color: var(--primary-color); color: white; min-width: 120px; border: 2px solid var(--primary-color); transition: all 0.2s ease;">
+                ✅ Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Variáveis globais para o modal de confirmação
+let confirmCallback = null;
+
+// Função para mostrar modal de confirmação personalizado
+function showConfirm(message, callback) {
+    const modal = document.getElementById('confirmModal');
+    const messageEl = document.getElementById('confirmMessage');
+    const okBtn = document.getElementById('confirmOk');
+    const cancelBtn = document.getElementById('confirmCancel');
+    
+    messageEl.textContent = message;
+    confirmCallback = callback;
+    modal.style.display = 'block';
+    
+    // Focar no botão cancelar por segurança
+    cancelBtn.focus();
+}
+
+// Função para esconder modal
+function hideConfirm() {
+    document.getElementById('confirmModal').style.display = 'none';
+    confirmCallback = null;
+}
+
+// Event listeners para os botões do modal
+document.getElementById('confirmOk').addEventListener('click', function() {
+    if (confirmCallback) {
+        confirmCallback(true);
+    }
+    hideConfirm();
+});
+
+document.getElementById('confirmCancel').addEventListener('click', function() {
+    if (confirmCallback) {
+        confirmCallback(false);
+    }
+    hideConfirm();
+});
+
+// Fechar modal ao clicar fora dele
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideConfirm();
+    }
+});
+
+// Fechar modal com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('confirmModal').style.display === 'block') {
+        hideConfirm();
+    }
+});
+
+// Função para ativar/desativar motorista com modal personalizado
+async function toggleDriverStatus(driverId, activate) {
+    const action = activate ? 'ativar' : 'desativar';
+    const actionColor = activate ? '✅' : '🚫';
+    const message = `${actionColor} Tem certeza que deseja ${action} este motorista?\n\n${activate ? 'O motorista ficará disponível para agendamentos.' : 'O motorista não aparecerá mais nas listas de agendamento.'}`;
+    
+    showConfirm(message, async function(confirmed) {
+        if (confirmed) {
+            try {
+                // Mostrar loading
+                const button = event.target;
+                const originalContent = button.innerHTML;
+                button.innerHTML = '⏳';
+                button.disabled = true;
+                
+                const response = await fetch(`/drivers/${driverId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ active: activate })
+                });
+                
+                if (response.ok) {
+                    // Mostrar sucesso temporariamente
+                    button.innerHTML = activate ? '✅' : '❌';
+                    button.style.backgroundColor = activate ? 'var(--success-color)' : 'var(--danger-color)';
+                    
+                    // Mostrar notificação de sucesso
+                    showAlert(`Motorista ${activate ? 'ativado' : 'desativado'} com sucesso!`, 'success');
+                    
+                    // Recarregar página após delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    // Mostrar erro
+                    showAlert('Erro ao alterar status do motorista', 'danger');
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                }
+            } catch (error) {
+                showAlert('Erro de conexão ao alterar status', 'danger');
+                button.innerHTML = originalContent;
+                button.disabled = false;
+            }
+        }
+    });
+}
+
+// Função para mostrar alertas personalizados
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    let bgColor = 'var(--primary-color)';
+    let icon = 'ℹ️';
+    
+    switch(type) {
+        case 'success':
+            bgColor = 'var(--success-color)';
+            icon = '✅';
+            break;
+        case 'danger':
+            bgColor = 'var(--danger-color)';
+            icon = '❌';
+            break;
+        case 'warning':
+            bgColor = 'var(--warning-color)';
+            icon = '⚠️';
+            break;
+    }
+    
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1001;
+        min-width: 300px;
+        max-width: 500px;
+        padding: 1rem 1.5rem;
+        background: ${bgColor};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        backdrop-filter: blur(10px);
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+    `;
+    
+    alertDiv.innerHTML = `${icon} ${message}`;
+    document.body.appendChild(alertDiv);
+    
+    // Remover após 4 segundos
+    setTimeout(() => {
+        alertDiv.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 300);
+    }, 4000);
+}
+
+// Adicionar animações CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            transform: translate(-50%, -60%);
+            opacity: 0;
+            scale: 0.9;
+        }
+        to {
+            transform: translate(-50%, -50%);
+            opacity: 1;
+            scale: 1;
+        }
+    }
+    
+    #confirmModal .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    #confirmModal .btn:active {
+        transform: translateY(0);
+    }
+    
+    #confirmCancel:hover {
+        background-color: var(--color-70) !important;
+        border-color: var(--color-60) !important;
+    }
+    
+    #confirmOk:hover {
+        background-color: var(--primary-hover) !important;
+        border-color: var(--primary-hover) !important;
+    }
+`;
+document.head.appendChild(style);
+</script>
 {% endblock %}
